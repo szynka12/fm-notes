@@ -1,0 +1,262 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsthm, bm, physics, enumerate}
+\usepackage{hyperref}
+\newtheorem{theorem}{Theorem}
+\newtheorem{lemma}{Lemma}
+
+\providecommand{\levicivita}[3]{%
+  \ensuremath{\varepsilon_{{#1}{#2}{#3}}}
+}
+
+% ------------------------------------------------------------------------------
+\title{Derivation of Reynolds transport theorem}
+\author{Wojciech Sadowski}
+
+\begin{document}
+\maketitle
+
+\begin{theorem}[Reynolds transport theorem, RTT]
+  Given:
+  \begin{enumerate}[(i)]
+    \item a material volume \(\Omega\), whose shape and position are varying with time,
+      i.e.\ \(\Omega = \Omega(t)\);
+    \item an extensive variable \(\Phi = \Phi(t)\) with its intensive counterpart 
+      \(\phi = \phi(t, \vb{x})\)  defined inside the material volume.
+  \end{enumerate}
+	The total derivative of \(\Phi\) with respect to time can be formulated as:
+  \begin{equation}
+    \dv{\Phi}{t} = \dv{t} \int\limits_{\Omega(t)} \phi \dd{\Omega}
+    = \int\limits_{\Omega(t)} \dfrac{D\phi}{Dt} + \phi \div{\vb{v}} \dd{\Omega}
+  \end{equation}
+\end{theorem}
+
+\begin{proof}
+	The integral of \(\phi\) can be expressed in reference configuration 
+  \(\Omega^0\), assuming that \(\Omega(t) = J(t)\Omega^0\):
+	\begin{equation}
+    \dv{t} \int\limits_{\Omega(t)} \phi(t, \vb{x}) \dd{\Omega} = 
+    \dv{t} \int\limits_{\Omega^0} \phi(t, \vb{x^0})J(t) \dd{\Omega^0} 
+	\end{equation}
+	Since \(\Omega_0\) is time independent, the derivative can be moved
+  under the integral:
+	\begin{equation}
+    \dv{t} \int\limits_{\Omega(t)} \phi(t, \vb{x}) \dd{\Omega} = 
+    \int\limits_{\Omega^0} \dv{t}[\phi(t, \vb{x^0})J(t)] \dd{\Omega^0} =
+    \int\limits_{\Omega^0} \dfrac{D\phi}{Dt}J + \phi\dv{J}{t} \dd{\Omega^0} 
+	\end{equation}
+  Note the presence of substantial derivative; the intensive quantity is
+  transported by the fluid.
+	Factoring the Jacobian out of the terms under the integral, we can return
+  to the original integration region
+	\begin{equation}
+    \int\limits_{\Omega^0} \dfrac{D\phi}{Dt}J + \phi\dv{J}{t} \dd{\Omega^0} = 
+    \int\limits_{\Omega^0} \qty[\dfrac{D\phi}{Dt} + J^{-1}\phi\dv{J}{t}]J \dd{\Omega^0} = 
+    \int\limits_{\Omega(t)} \dfrac{D\phi}{Dt} + J^{-1}\phi\dv{J}{t} \dd{\Omega}.
+	\end{equation}
+  The final formula is obtained by plugging in the time derivative of the 
+  Jacobian~\autoref{eq::ddt_J}:
+  \begin{equation*}
+    \int\limits_{\Omega(t)} \dfrac{D\phi}{Dt} + J^{-1}\phi\dv{J}{t} \dd{\Omega}
+    = \int\limits_{\Omega(t)} \dfrac{D\phi}{Dt} + \phi \div\vb{v} \dd{\Omega}
+  \end{equation*}
+
+  
+\end{proof}
+
+
+
+\section*{Auxiliary definitions and lemmas}
+
+\paragraph{Material volume}
+Special integration region \(\Omega\) defined as a parcel of fluid
+with such boundaries that there is no flux of selected intensive property 
+through the them.
+
+\paragraph{Index notation and Levi-Civita symbol}
+Index notation, or Einstein notation simplifies greatly multi variable 
+calculus and relies on two rules:
+\begin{enumerate}
+  \item Any vector variable can be represented as symbol with an index.
+    For example, velocity \(\vb{v}\), a vector having generally three 
+    components, can be simply written as \(v_i\). Index \(i\) is the so 
+    called \textbf{free index}. The letter does not matter, i.e.\ \(i\) can
+    be replaced with \(\alpha\) or whatever.
+  \item Repeated index implies summation over full range of this index. 
+    This means that, if a term like \(a_i b_j c_j\) is encountered, it can
+    be expanded into
+    \[
+      a_i b_j c_j = a_i b_1 c_1 + a_i b_2 c_2 + a_i b_3 c_3 =
+      \sum\limits_{j=1,2,3} a_i b_j c_j.
+    \]
+    Therefore, we can say that the sum sign \(\Sigma\) is "implicit". The index
+    \(i\) remained a free index in the above expression. This means that a
+    version for each spatial dimension can be obtained by setting \(i\) to 
+    a chosen index.
+\end{enumerate}
+The Levi-Civita symbol, \(\levicivita{i}{j}{k}\), is a helpful permutation
+symbol defined in a following way:
+\begin{equation*}
+\varepsilon_{ijk} = \begin{cases}
+         +1 & \text{if } (i,j,k) \text{ is } (1,2,3), (2,3,1), \text{ or } (3,1,2), \\
+         -1 & \text{if } (i,j,k) \text{ is } (3,2,1), (1,3,2), \text{ or } (2,1,3), \\
+    \;\;\,0 & \text{if } i = j, \text{ or } j = k, \text{ or } k = i
+\end{cases}
+\end{equation*}
+
+\paragraph{Transforming material volume to reference configuration}
+The integration region is usually the function of time, \(\Omega = \Omega(t)\).
+The reference configuration of \(\Omega(t)\), denoted as \(\Omega^0\), is not 
+time independent. Assuming that transformation \(\Omega^0 \rightarrow \Omega\)
+is invertable, we can change the integration region to the reference
+configuration by writing:
+\begin{equation}
+  d\Omega(t) = J(t)d\Omega^0,
+  \label{eq::jacobian_relation}
+\end{equation}
+where \(J\) denotes a Jacobian of the transformation.
+
+\paragraph{Defining the Jacobian}
+The trajectory of a point \(\vb{x}\) laying inside 
+the parcel \(\Omega\) is a function of time and the initial 
+configuration \(\vb{x}^0\):
+\begin{equation}
+  \vb{x} = \vb{x}(t, \vb{x}^0)
+  \label{eq::trajectory}
+\end{equation}
+In the above, we have assumed that for a given point it is possible 
+to find its reference configuration, that is inverse function 
+\(\vb{x}^0 = \vb{x}^0(t, \vb{x})\) exists.
+The necessary and sufficient condition for invertability is the 
+non-vanishing Jacobian, which can be given as:
+\begin{equation}\label{eq::jacobian}
+  J = \det\pdv{x_i}{x^0_j} 
+  = \levicivita{i}{j}{k} \pdv{x_1}{x^0_i}\pdv{x_2}{x^0_j}\pdv{x_3}{x^0_k}
+\end{equation}
+
+\paragraph{Time derivative of intensive variable, substantial derivative}
+Total time derivative of an intensive property \(d \phi / d t\) 
+(also called substantial derivative, denoted \(D\phi/Dt\)) can be formulated 
+in the following way. We assume that trajectory of each point inside a fluid can
+be described as in \autoref{eq::trajectory} and 
+we use the chain rule:
+\begin{equation*}
+  \dfrac{D\phi}{Dt} \equiv \dv{\phi}{t}  
+  =  \dv{t}f\qty(\vb{x}\qty(t,\vb{x}^0))
+  = \pdv{\phi}{t} + \dv{x_i}{t} \pdv{\phi}{x_i}
+  = \pdv{\phi}{t} + \qty(\dv{\vb{x}}{t} \dotproduct \grad )\phi
+\end{equation*}
+Since the time derivative of the trajectory \(d\vb{x} / dt\) is equal 
+to the fluids velocity \(\vb{v}\) by definition, the above reduces to:
+\begin{equation}
+  \dfrac{D\phi}{Dt} \equiv \dv{\phi}{t} 
+  = \pdv{\phi}{t} + (\vb{v} \dotproduct \grad) \phi
+\end{equation}
+
+
+\paragraph{Material derivative of the Jacobian}
+The Jacobian arises most often while changing the integration region 
+from \(\Omega(t)\) to \(\Omega^0\) according to \autoref{eq::jacobian_relation}.
+The closed expression for the time derivative of the Jacobian must be found 
+for the proof or RTT.
+Starting from the definition of the Jacobian determinant~\autoref{eq::jacobian},
+and distributing the derivative:
+\begin{align*}
+  \dv{J}{t} = \dv{t} \qty(\levicivita{i}{j}{k} 
+  \pdv{x_1}{x^0_i} \pdv{x_2}{x^0_j} \pdv{x_3}{x^0_k})
+  &= \levicivita{i}{j}{k} \dv{t} \qty( \pdv{x_1}{x^0_i} ) 
+    \pdv{x_2}{x^0_j} \pdv{x_3}{x^0_k} \\
+  &+ \levicivita{i}{j}{k} \pdv{x_1}{x^0_i} 
+    \dv{t} \qty( \pdv{x_2}{x^0_j})  \pdv{x_3}{x^0_k} 
+  + \levicivita{i}{j}{k} \pdv{x_1}{x^0_i} 
+    \pdv{x_2}{x^0_j} \dv{t} \qty( \pdv{x_3}{x^0_k} )  
+\end{align*}
+In the above, differentiation with respect to time and reference
+configuration coordinates commute (the order of differentiation 
+can be freely changed), resulting in velocity components:
+\begin{equation*}
+  \dv{t} \qty( \pdv{x_\alpha}{x^0_\beta} )
+  = \pdv{v_\alpha}{x^0_\beta}
+  = \pdv{v_\alpha}{x_\gamma} \pdv{x_\gamma}{x^0_\beta}
+\end{equation*}
+We also insert additional differentiation for the sake of 
+further derivation.
+
+By inserting the above into the formula for the Jacobian derivative 
+and simplifying, we get final formula for the \(\diffd J/\diffd t\).
+Taking only one of the terms as an example and expanding summation 
+over \(\gamma\):
+\begin{equation*}
+  \begin{split}
+    & \levicivita{i}{j}{k} \dv{t} \qty( \pdv{x_1}{x^0_i} ) 
+      \pdv{x_2}{x^0_j} \pdv{x_3}{x^0_k}
+    = \pdv{v_1}{x_\gamma} \levicivita{i}{j}{k} \pdv{x_\gamma}{x^0_i}\pdv{x_2}{x^0_j}
+      \pdv{x_3}{x^0_k} =\\
+    & \pdv{v_1}{x_1} \levicivita{i}{j}{k} \pdv{x_1}{x^0_i}\pdv{x_2}{x^0_j} \pdv{x_3}{x^0_k} + 
+    \pdv{v_1}{x_2} \levicivita{i}{j}{k} \pdv{x_2}{x^0_i}\pdv{x_2}{x^0_j} \pdv{x_3}{x^0_k} +
+    \pdv{v_1}{x_3} \levicivita{i}{j}{k} \pdv{x_3}{x^0_i}\pdv{x_2}{x^0_j} \pdv{x_3}{x^0_k}
+  \end{split}
+\end{equation*}
+Both terms on the right with repeated index in numerators will be equal to 
+zero because of the definition of \(\levicivita{i}{j}{k}\). They will be 
+repeated two times, once positive and once negative, for example:
+\[
+  \pdv{v_1}{x_2} \levicivita{i}{j}{k} 
+  \pdv{x_2}{x^0_i}\pdv{x_2}{x^0_j} \pdv{x_3}{x^0_k} = \dots
+  \pdv{v_1}{x_2} 
+  \pdv{x_2}{x^0_1}\pdv{x_2}{x^0_2} \pdv{x_3}{x^0_3} + \dots 
+  - \pdv{v_1}{x_2} 
+  \pdv{x_2}{x^0_2}\pdv{x_2}{x^0_1} \pdv{x_3}{x^0_3} + \dots
+\]
+The terms on the right cancel each other out. In the above, we shown only 
+\((i,j,k) = (1,2,3)\) and \((2,1,3)\).
+Thanks to that, and using the original Jacobian definition, 
+i.e.~\autoref{eq::jacobian}, we can simplify first of the terms: 
+\begin{equation*}
+  \levicivita{i}{j}{k} \dv{t} \qty( \pdv{x_1}{x^0_i} ) \pdv{x_2}{x^0_j} 
+  \pdv{x_3}{x^0_k}
+  = \pdv{v_1}{x_1} \levicivita{i}{j}{k} \pdv{x_1}{x^0_i}\pdv{x_2}{x^0_j} 
+  \pdv{x_3}{x^0_k}
+  = \pdv{v_1}{x_1} J
+\end{equation*}
+Treating indices \(2\) and \(3\) the same way, the final formula for the 
+time derivative of the Jacobian looks as follows:
+\begin{equation}
+  \dv{J}{t}  = \pdv{v_i}{x_i} J = \qty(\div\vb{v})J
+  \label{eq::ddt_J}
+\end{equation}
+
+
+
+
+
+
+
+% \begin{proof}
+% 	The integral of \(f\) can be expressed in reference configuration \(\Omega^0\) using the relation~\eqref{eq::theo::reynolds::regions}:
+% 	\begin{equation}
+% 		\dfrac{d}{dt}\regionint{\Omega(t)}{f}{\Omega}
+% 		= \dfrac{d}{dt}\regionint{\Omega^0}{f(t, \vec{x}(t, \vec{x}^0)) J}{}
+% 	\end{equation}
+% 	Since \(\Omega_0\) does not change in time the derivative can be moved under the integral:
+% 	\begin{equation}
+% 		\dfrac{d}{dt}\regionint{\Omega(t)}{f(t, \vec{r})}{\Omega}
+% 		=
+% 		\regionint{\Omega^0}{\dfrac{d}{dt} \left\{ f(t, \vec{x}(t, \vec{x}^0)) J \right\}}{\Omega^0}
+% 		=\regionint{\Omega^0}{\dfrac{df}{dt}J + f\dfrac{dJ}{dt}}{\Omega^0}
+% 	\end{equation}
+% 	Dividing what is under the integral by the Jacobian, we can return to the original integration region:
+% 	\begin{equation}
+% 		\regionint{\Omega^0}{\dfrac{df}{dt}J + f\dfrac{dJ}{dt}}{}
+% 		= \regionint{\Omega^0}{\left[ \dfrac{df}{dt} + \dfrac{1}{J}f\dfrac{dJ}{dt} \right]J}{}
+% 		= \regionint{\Omega(t)}{\dfrac{df}{dt} + f\dfrac{1}{J}\dfrac{dJ}{dt}}{\Omega}
+% 	\end{equation}
+% 	The final formula is obtained by plugging in the time derivative of the Jacobian~\eqref{eq::theo::reynolds::ddt(J)}:
+% 	\begin{equation*}
+% 		\dfrac{d}{dt}\regionint{\Omega(t)}{f}{\Omega}
+% 		= \regionint{\Omega(t)}{\dfrac{df}{dt} + f\dfrac{1}{J}\dfrac{dJ}{dt}}{\Omega}
+% 		= \regionint{\Omega(t)}{ \dfrac{df}{dt} + f (\nabla \cdot \vec{v})}{\Omega}
+% 	\end{equation*}
+% \end{proof}
+
+\end{document}
