@@ -14,5 +14,5 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: momentum_equation.zip
-          path: pdfs/momentum_equation.pdf
+          path: momentum_equation.pdf
 
