@@ -12,13 +12,9 @@ jobs:
         run: docker run --mount src=$GITHUB_WORKSPACE,target=/usr/src/tex,type=bind dxjoke/tectonic-docker:latest /bin/sh -c "tectonic momentum_equation.tex"
       - name: Compile reynolds_transport_theorem.tex
         run: docker run --mount src=$GITHUB_WORKSPACE,target=/usr/src/tex,type=bind dxjoke/tectonic-docker:latest /bin/sh -c "tectonic reynolds_transport_theorem.tex"
-      - name: Upload momentum_equation.pdf
-        uses: actions/upload-artifact@v2
+      - name: Upload notes
+        uses: actions/upload-artifact@v3
         with:
-          name: momentum_equation.pdf
-          path: momentum_equation.pdf
-      - name: Upload reynolds_transport_theorem.pdf
-        uses: actions/upload-artifact@v2
-        with:
-          name: reynolds_transport_theorem.pdf
-          path: reynolds_transport_theorem.pdf
+          name: notes
+          path: ./*.pdf
+
