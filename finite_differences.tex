@@ -1,0 +1,164 @@
+\documentclass{article}
+
+\usepackage{amsmath, amsthm, bm, physics, enumerate, siunitx, dirtytalk, tikz}
+\usepackage{hyperref}
+\usetikzlibrary{calc, patterns}
+
+\newtheorem{theorem}{Theorem}
+% \newtheorem{lemma}{Lemma}
+
+% \providecommand{\levicivita}[3]{%
+%   \ensuremath{\varepsilon_{{#1}{#2}{#3}}}
+% }
+
+
+% ------------------------------------------------------------------------------
+\title{Formulas for finite differences}
+\author{Wojciech Sadowski}
+
+\begin{document}
+\maketitle
+\section{Basics}
+\paragraph{Taylor series}
+\[
+  u(x + h) = u(x) 
+  + \frac{h}{1!}\pdv{u}{x} 
+  + \frac{h}{2!}\pdv[2]{u}{x} 
+  + \frac{h}{3!}\pdv[3]{u}{x} + \dots
+\]
+
+\section{One dimension}
+\paragraph{Forward difference}
+\[
+  u(x + h) = u(x) 
+  + \frac{h}{1!}\pdv{u}{x} 
+  + \frac{h^2}{2!}\pdv[2]{u}{x} +
+  + \frac{h^3}{3!}\pdv[3]{u}{x} +
+  \mathcal{O}\qty(h^4)
+\]
+We divide by \(h\):
+\[
+  \frac{u(x + h)}{h} = \frac{u(x)}{h} 
+  + \pdv{u}{x} 
+  + \frac{h}{2!}\pdv[2]{u}{x} 
+  + \frac{h^2}{3!}\pdv[3]{u}{x} 
+  + \mathcal{O}\qty(h^3)
+\]
+Rearange:
+\begin{equation}\label{eq::forward}
+   \pdv{u}{x} 
+   = \frac{u(x + h) - u(x)}{h}  
+  - \frac{h}{2!}\pdv[2]{u}{x} 
+  - \frac{h^2}{3!}\pdv[3]{u}{x} 
+  + \mathcal{O}\qty(h^3)
+\end{equation}
+Finally:
+\[
+   \pdv{u}{x} 
+   = \frac{u(x + h) - u(x)}{h}  + \mathcal{O}\qty(h)
+\]
+
+\paragraph{Backward difference}
+\[
+  u(x - h) = u(x) 
+  - \frac{h}{1!}\pdv{u}{x} 
+  + \frac{h^2}{2!}\pdv[2]{u}{x} 
+  - \frac{h^3}{3!}\pdv[3]{u}{x} 
+  + \mathcal{O}\qty(h^4)
+\]
+We divide by \(h\):
+\[
+  \frac{u(x - h)}{h} = \frac{u(x)}{h} 
+  -\pdv{u}{x} 
+  + \frac{h}{2!}\pdv[2]{u}{x} +
+  - \frac{h^2}{3!}\pdv[3]{u}{x} +
+  \mathcal{O}\qty(h^3)
+\]
+Rearange:
+\begin{equation}\label{eq::backward}
+   \pdv{u}{x} 
+   = \frac{u(x) - u(x-h)}{h}  
+  + \frac{h}{2!}\pdv[2]{u}{x} 
+  - \frac{h^2}{3!}\pdv[3]{u}{x} 
+  + \mathcal{O}\qty(h^3)
+\end{equation}
+Finally:
+\[
+   \pdv{u}{x} 
+   = \frac{u(x) - u(x - h)}{h}  + \mathcal{O}\qty(h)
+\]
+\paragraph{Central difference}
+Take a sum of forward and backward, \autoref{eq::forward} and 
+\autoref{eq::backward}:
+
+\begin{equation}\label{eq::backward}
+   2\pdv{u}{x} 
+   = \frac{u(x+h) - u(x-h)}{h}  
+  - \frac{2 h^2}{3!}\pdv[3]{u}{x} 
+  + \mathcal{O}\qty(h^3)
+\end{equation}
+Divide by two:
+\begin{equation}\label{eq::backward}
+   \pdv{u}{x} 
+   = \frac{u(x+h) - u(x-h)}{2h}  
+  - \frac{1 h^2}{3!}\pdv[3]{u}{x} 
+  + \mathcal{O}\qty(h^3)
+\end{equation}
+Finally:
+\begin{equation}\label{eq::backward}
+   \pdv{u}{x} 
+   = \frac{u(x+h) - u(x-h)}{2h}  
+  + \mathcal{O}\qty(h^2)
+\end{equation}
+
+\paragraph{Central difference of second derivative}
+It is not exactly central difference of a central difference. That would have 
+a wide stencil. Bad. Instead try writing at halfs.
+\[
+  u''(x) = \frac{u'(x+h/2) - u'(x-h/2)}{h}
+\]
+\[
+  u'(x\pm h) = \frac{u(x\pm h/2 + h/2) - u(x \pm h/2 - h/2)}{h}
+\]
+Pluging in\dots
+\[
+  u''(x) = \frac{ u(x + h) - 2 u(x) + u(x-h) }{h^2}
+\]
+
+\section{Solving systems of equations}
+\paragraph{Gauss seidel formula}
+From Wikipedia. We have 
+\[
+  A =
+\underbrace{
+\begin{bmatrix} a_{11} & 0 & \cdots & 0 \\ a_{21} & a_{22} & \cdots & 0 \\ \vdots & \vdots & \ddots & \vdots \\a_{n1} & a_{n2} & \cdots & a_{nn} \end{bmatrix}
+}_{\textstyle L_*}
++
+\underbrace{
+\begin{bmatrix} 0 & a_{12} & \cdots & a_{1n} \\ 0 & 0 & \cdots & a_{2n} \\ \vdots & \vdots & \ddots & \vdots \\0 & 0 & \cdots & 0 \end{bmatrix}
+}_{\textstyle U}
+.
+\]
+We do:
+\begin{alignat}{1}
+A\mathbf x &= \mathbf b \\
+(L_*+U) \mathbf x &= \mathbf b \\
+L_* \mathbf x+U\mathbf x &= \mathbf b \\
+L_* \mathbf{x} &= \mathbf{b} - U \mathbf{x}
+\end{alignat}
+
+The Gauss–Seidel method now solves the left hand side of this expression for $\mathbf{x}$, 
+using previous value for $\mathbf{x}$ on the right hand side. Analytically, 
+this may be written as:
+\[
+  \mathbf{x}^{(k+1)} = L_*^{-1} \left(\mathbf{b} - U \mathbf{x}^{(k)}\right).
+\]
+
+However, by taking advantage of the triangular form of \(L_{*}\), the elements of 
+\(\mathbf {x} ^{(k+1)}\) can be computed sequentially for each row \(i\) using 
+forward substitution:
+\[
+  x^{(k+1)}_i  = \frac{1}{a_{ii}} \left(b_i - \sum_{j=1}^{i-1}a_{ij}x^{(k+1)}_j - \sum_{j=i+1}^{n}a_{ij}x^{(k)}_j \right),\quad i=1,2,\dots,n
+\]
+
+\end{document} 
