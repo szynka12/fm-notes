@@ -23,8 +23,8 @@
 \[
   u(x + h) = u(x) 
   + \frac{h}{1!}\pdv{u}{x} 
-  + \frac{h}{2!}\pdv[2]{u}{x} 
-  + \frac{h}{3!}\pdv[3]{u}{x} + \dots
+  + \frac{h^2}{2!}\pdv[2]{u}{x} 
+  + \frac{h^3}{3!}\pdv[3]{u}{x} + \dots
 \]
 
 \section{One dimension}
@@ -160,5 +160,110 @@ forward substitution:
 \[
   x^{(k+1)}_i  = \frac{1}{a_{ii}} \left(b_i - \sum_{j=1}^{i-1}a_{ij}x^{(k+1)}_j - \sum_{j=i+1}^{n}a_{ij}x^{(k)}_j \right),\quad i=1,2,\dots,n
 \]
+
+\section{COSI/U4}
+\subsection{Instationary diffusion}
+\paragraph{Forward Euler scheme}
+It is an explicit scheme in time (from Taylor expansion):
+\[
+  u(t^{n+1}, x) = u(t^{n}, x) + \Delta t f\qty(t^{n}, x, u(t^{n}, x))
+\]
+\paragraph{Implicit Euler}
+\[
+  u(t^{n+1}, x) = u(t^{n}, x) + \Delta t f\qty(t^{n+1}, x, u(t^{n+1}, x))
+\]
+
+\paragraph{Heat equation}
+\[
+  \pdv{T}{t} = \alpha \pdv[2]{T}{x} = \dfrac{\lambda}{\rho c_p}\pdv[2]{T}{x}
+\]
+
+Discretised form
+\[
+  \dfrac{T_i^{n+1} - T_i^n}{\Delta t} = \alpha\dfrac{T^n_{i+1} - 2 T^n_{i} + T^n_{i-1}}{\qty(\Delta x)^2 }
+\]
+\[
+  T_i^{n+1} = T_i^n + \dfrac{\alpha\Delta t}{\qty(\Delta x)^2}\qty[T^n_{i+1} - 2 T^n_{i} + T^n_{i-1}]
+\]
+\[
+  T_i^{n+1} = \qty(1 - \dfrac{2\alpha\Delta t}{\qty(\Delta x)^2})T_i^n 
+  + \dfrac{\alpha\Delta t}{\qty(\Delta x)^2}\qty[T^n_{i+1}  + T^n_{i-1}]
+\]
+
+\subsection{Von Neumann stability analysis}
+The von Neumann method is based on the decomposition of the errors into 
+Fourier series. To illustrate the procedure, consider the one-dimensional 
+heat equation
+\[
+  \pdv{T}{t} = \alpha \pdv[2]{T}{x} 
+\]
+defined on the spatial interval \(L\), which can be discretized in this case, 
+using the FTCS discretization scheme as
+\[
+u_j^{n + 1} = u_j^n + r \left(u_{j + 1}^n - 2 u_j^n + u_{j - 1}^n \right),\quad
+r = \frac{\alpha\, \Delta t}{\left( \Delta x \right)^2}
+\]
+and the solution \(u_j^{n}\) of the discrete equation approximates 
+the analytical solution \(u(x,t)\) of the PDE on the grid.
+
+Define the round-off error \(\epsilon_j^n\) as
+\[
+  \epsilon_j^n = N_j^n - u_j^n
+\]
+where \(u_j^n\) is the solution of the discretized equation that would be computed 
+in the absence of round-off error, and \(N_j^n\) is the numerical solution. 
+The error satisfies the solution since the exact solution does that as well.
+\[
+\epsilon_j^{n + 1} = \epsilon_j^n + r \left(\epsilon_{j + 1}^n - 2 \epsilon_j^n + \epsilon_{j - 1}^n \right)
+\]
+Both solution and error have the same behaviour with respect to time. We assume periodic 
+conditions. Equation is linear, so we can say:
+\[
+\epsilon(x,t) = \sum_{m=-M}^{M} e_m = 
+\sum_{m=-M}^{M} E_m(t) e^{{ i}  k_m x}
+\]
+The wavenumber is defined as 
+\[
+  k_m = \dfrac{\pi m}{L},\quad m = -M,\dots,-1,0,1,\dotsm M, \quad M = \dfrac{L}{\Delta X}
+\]
+The amplitude \(E_m\) is the function of time.
+We can only consider one of the error frequencies:
+\begin{align}
+ \epsilon_j^n & = E_m(t) e^{ik_m x} \\
+ \epsilon_j^{n+1} & = E_m(t+\Delta t)  e^{ik_m x} \\
+ \epsilon_{j+1}^n & = E_m(t) e^{ik_m (x+\Delta x)} \\
+ \epsilon_{j-1}^n & = E_m(t)  e^{ik_m (x-\Delta x)},
+\end{align}
+Inserting into the equations (I divided by \(E_m(t)\) for the sake of space):
+\[
+  \dfrac{E_m(t+\Delta t)  e^{ik_m x}}{E_m(t)} =  e^{ik_m x} 
++ r \left( e^{ik_m (x+\Delta x)} - 2 e^{ik_m x} +   e^{ik_m (x-\Delta x)} \right)
+\]
+Now dividing by the \(e^{i k_m x}\)
+\[
+  \dfrac{E_m(t+\Delta t) }{E_m(t)} =  1
++ r \left( e^{ik_m \Delta x} - 2  +   e^{-ik_m \Delta x} \right)
+\]
+If we set \(\phi = k_m \Delta x\), note that \(e^{i\phi} = i\sin\qty(\phi) + \cos\qty(\phi)\) and
+remember that \(\sin\) is antysymmetric and \(\cos\) is symmetric
+\[
+  \dfrac{E_m(t+\Delta t) }{E_m(t)} =  1
++ r \left( i\sin\qty(\phi) + \cos\phi - 2  - i\sin\phi + \cos\phi \right)
+\]
+\[
+  G = \dfrac{E_m(t+\Delta t) }{E_m(t)} =  1 - 2r \left(\cos\phi - 1\right) 
+  = 1 + 4r\sin^2\dfrac{\phi}{2}
+\]
+We have also used the property of \(2\sin^2\qty(\phi/2) = 1-\cos\phi\). 
+The condition for stability is \(|G| \neq 1\).
+\[
+   \left| 1 - 4 r \sin^2 (\theta /2) \right| \leq 1
+\]
+The \(\sin^2\) is always positive. 
+\[
+   4 r \sin^2 (\theta /2) \leq 2
+\]
+
+
 
 \end{document} 

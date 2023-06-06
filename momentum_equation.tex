@@ -1,4 +1,4 @@
-\documentclass{article}
+\documentclass[a4paper]{article}
 
 \usepackage{amsmath, amsthm, bm, physics, enumerate, siunitx, dirtytalk, tikz}
 \usepackage{hyperref}
@@ -249,13 +249,13 @@ title, you might already now what it is. That said, this is written in style of
 a lecture, so please make a dramatic pause in your brain before reading the end of the 
 next sentence. We will call \(\tau_{ij}\) the \emph{stress tensor}. 
 
-But what is a tensor, you might ask? My colleague said at some point\footnote{In Dresden, on the 1st of June, during breakfast, around 9:30 PM.} that a tensor
+But what is a tensor, you might ask? My colleague said at some point\footnote{In Dresden, on the 1st of June, during breakfast, around 9:30 AM.} that a tensor
 is just a \say{glorified vector}. This is not really true, but it is a useful starting point for a discussion. 
 In fact, some vectors 
 \emph{are} tensors. Generally, a tensor is a \say{geometrical thing}, that is,
 it describes some effect independent on the coordinate system. Velocity vector
 is a tensor or order 1, as it describes that an object moves in a specific direction 
-with a specific velocity\footnote{Not every vector is a tensor, e.g.\ the vector
+with a specific velocity\footnote{Not every vector is a tensor, e.g.\ the 
 position vector is always dependant on the chosen coordinate system.}. If we
 change the basis (coordinate system), the representation, that is the components 
 of the vector will change, but the vector itself still points in the same 
@@ -377,7 +377,184 @@ We can write this change of velocity mathematically as
 The tensor \(\dot{\vb{D}}\) is the strain-rate tensor and very importantly 
 it is \emph{symmetric}!
 
-\section{Momentum equation I: General form}
+\section{Road towards momentum equation}
+
+\paragraph{Force acting on a surface}
+Armed with the stress tensor we can now compute the force acting on any 
+closed surface:
+\[
+  \vb{F} = \oint\limits_S \vb{f} \dd{S} 
+  = \oint\limits_S \vb{n}\bm{\tau} 
+  = \hat{\vb{e_i}}\oint\limits_S n_j \tau_{ji}\dd{S}
+\]
+Now we can use the Greens theorem\footnote{In polish it is called 
+Green-Gauss-Ostrogracki (GGO) theorem.} to convert the surface integral 
+to a volume one. Or simply, when mathematicians aren't looking, it is 
+a theorem about changing \(S\) for \(\Omega\) and \(n_j\) for 
+\(\partial/\partial x_j\). Naturally, \(S\) is the surface of \(\Omega\). 
+Let's do the deed
+\[
+  \vb{F} 
+  = \hat{\vb{e_i}}\oint\limits_S n_j \tau_{ji}\dd{S}
+  = \hat{\vb{e_i}}\int\limits_\Omega \pdv{\tau_{ji}}{x_j}\dd{\Omega}
+  = \int\limits_\Omega \div\bm{\tau} \dd{\Omega}
+\]
+
+\paragraph{Body force}
+We have written an expression for surface forces. What about the forces 
+acting from the \emph{inside}, like gravity? Here we can say
+\[
+  \vb{F} = \int\limits_\Omega \vb{f} \dd{m}
+\]
+Pardon my messy notation, but now \(\vb{f}\) is the \emph{volume} density
+of force. We also wrote \(\dd{m}\) which is the mass differential. It is 
+simply given as \(\rho\dd{\Omega}\), where the first in the product is the 
+density of the material and the second is the volume differential. So
+\[
+  \vb{F} = \int\limits_\Omega \rho\vb{f} \dd{\Omega}
+\]
+
+\paragraph{Derivation starts}
+We finally start deriving the momentum equation of a continous medium.
+We start from basic principles
+\[
+  \dv{t}\text{momentum} = {\text{force}}
+\]
+We first need to handle the momentum part. We divide the fluid into small,
+moving parts. All the parts give the sum of the whole momentum, so we write
+it as an integral
+\[
+  \text{momentum} = \int\limits_\Omega \dd{ (\text{momentum})}.
+\]
+We will handle the forces in a second. The differential of linear momentum 
+can be simply expressed as \(\vb{v}\dd{m} = \rho\vb{v} \dd{\Omega}\), where 
+\(\rho\) is the density. We already wrote the expression for the forces so 
+if we assemble everything we get this
+\begin{equation}\label{eq::mom_part}
+  \dv{t}\int\limits_\Omega \rho\vb{v} \dd{\Omega} = 
+  \int\limits_\Omega  \div\bm{\tau} + \rho\vb{f} \dd{\Omega}
+\end{equation}
+This is a simple equation, but it does not give us much insight. On the other 
+hand it describes the movement of \emph{everything}. One important thing to 
+note is that the volume \(\Omega\) is completely arbitrary. \emph{We can 
+chose it as we see fit.} We will use this property later to obtain 
+differential versions of the equations.
+
+\paragraph{Reynolds transport theorem}
+We are now standing in front of a difficult problem. We have to 
+differentiate an integral, which usually is not a sophisticated 
+issue. However, in our case, the integration domain \(\Omega\)
+is not a rigid body. Instead, it deforms and changes shape as the time progresses
+and the fluid flows, i.e.\ \(\Omega = \Omega(t)\). In short it depends on 
+\emph{the variable with respect to witch we differentiate}.
+Fortunately, we have a tool for that: Reynolds Transport Theorem.
+
+\begin{theorem}[Reynolds transport theorem, RTT]
+  Given:
+  \begin{enumerate}[(i)]
+    \item a material volume \(\Omega\), whose shape and position are varying with time,
+      i.e.\ \(\Omega = \Omega(t)\);
+    \item an extensive variable \(\Phi = \Phi(t)\) with its intensive counterpart 
+      \(\phi = \phi(t, \vb{x})\)  defined inside the material volume.
+  \end{enumerate}
+	The total derivative of \(\Phi\) with respect to time can be formulated as:
+  \begin{equation}
+    \dv{\Phi}{t} = \dv{t} \int\limits_{\Omega(t)} \phi \dd{\Omega}
+    = \int\limits_{\Omega(t)} \dfrac{D\phi}{Dt} + \phi \div{\vb{v}} \dd{\Omega}
+  \end{equation}
+\end{theorem}
+
+As can be seen above, the theorem connects the time derivative of an integral
+similar to ours with the integral of derivatives. The expression \(D\phi/Dt\)
+is a substantial derivative, defined as
+\[
+  \dfrac{D\phi}{Dt} = \pdv{\phi}{t} + v_i\pdv{\phi}{x_i}
+\]
+To showcase how it works, we will use RTT to derive the continuity equation.
+
+\paragraph{Detour for conservation of mass}
+The mas is conserved. This can be written as 
+\[
+  \dv{t}\int\limits_\Omega \dd{m} = 
+  \dv{t}\int\limits_\Omega \rho\dd{\Omega} = 0
+\]
+We see the time derivative of an integral. The alarm bells have sounded. 
+The war horns are sounding the music of battle. The ghost of all scientists
+pushing the boundaries of fluid dynamics, since human first managed to produced
+moonshine by heating up a piece of copper pipe, are eagerly awaiting our next 
+move. We were preparing for this moment
+for the last 10 minutes while reading last paragraph about RTT. 
+\emph{We what to do.}
+\[
+  \dv{t}\int\limits_\Omega \rho\dd{\Omega} = 
+  \int\limits_\Omega  \dfrac{D\rho}{Dt} + \rho\div{\vb{v}}\dd{\Omega}
+  =  0
+\]
+The expression under the integral can be further expanded to
+\[
+  \int\limits_\Omega  \pdv{\rho}{t} + (\vb{v}\dotproduct\grad)\rho  
+  + \rho\div{\vb{v}}\dd{\Omega}
+\]
+and if we note that 
+\[
+  (\vb{v}\dotproduct\grad)\rho + \rho\div{\vb{v}} = 
+  v_i \pdv{\rho}{x_i} + \rho\pdv{v_i}{x_i} = \pdv{\rho v_i}{x_i}
+  = \div{(\rho \vb{v})}
+\]
+we arrive at (almost) final result
+\[
+  \int\limits_\Omega  \pdv{\rho}{t} + \div{(\rho \vb{v})}\dd{\Omega} = 0
+\]
+Now, we will use an observation about the integration region from the 
+previous paragraphs, that is, it can be chosen arbitrarily. We haven't
+made any assumptions about it, so intuitively it shouldn't matter. 
+
+Let's think about for a second. For the sake of shortening the notation 
+lets denote \({\partial\rho}/{\partial t} + \div{(\rho \vb{v})}\) as \(X\). For a 
+completely arbitrary region \(\Omega\), the integral \(\int_\Omega X \dd{\Omega}\)
+is always equal to zero. This we know from the derived mass conservation equation.
+Of coarse, it will be true when \(X=0\) everywhere. Still, can it be the case that
+that \(X\neq0\) but the integral is equal to 0? 
+
+For that to be true, the region \(\Omega\) should be composed of \(\Omega^+\),
+a part in which \(X>0\), and \(\Omega^-\) where \(X<0\). Together, positive 
+contribution of \(\Omega^+\) and negative from \(\Omega^-\) give null value 
+of the integral. 
+
+But wait! We said, that the \(\Omega\) can be chosen arbitrarily. So what
+if we chose \(\Omega = \Omega^+\)? We know that the integral has to be zero,
+but that is impossible! We established that in this region \(X\) is strictly 
+positive and, therefore, the integral has to be positive as well. We have 
+reach a result confiction with our assumptions: \emph{this option is 
+impossible.} We can safely say, that the only way for the integral to 
+be null for each region, is for the integrated expression to equal to 0
+in each point in the region. So we can simply write
+\[
+\pdv{\rho}{t} + \div{(\rho \vb{v})} = 0
+\]
+which competes the derivation of mass conservation law.
+
+\paragraph{Back to momentum}
+We use RTT agian, this time on \autoref{eq::mom_part}. We get:
+\[
+  \int\limits_\Omega \pdv{\rho \vb{v}}{t} 
+  + \div{\qty(\rho\vb{v}\vb{v} )} \dd{\Omega} =
+  \int\limits_\Omega \div\bm{\tau} + \rho\vb{f} \dd{\Omega} 
+\]
+The product of velocity \(\vb{v}\vb{v}\) is a tensor. We can also write
+it as \(v_i v_j\). We note that we can actually accumulate the terms into 
+one integral equal to zero. We saw something like that before, right? 
+We \emph{again} know what to do! After dropping the integration we are 
+left with:
+\begin{equation}\label{eq::momentum_general_form}
+  \pdv{\rho \vb{v}}{t} 
+  + \div{\qty(\rho\vb{v}\vb{v} )}  =
+  \div\bm{\tau} + \rho\vb{f}
+\end{equation}
+which is a general, differential form of the momentum conservation law.
+However, in order to move forward we have to actually handle the issue 
+mentioned in the very beginning: defining a description for the stress 
+tensor of our fluid, or the \emph{constitutive relation}.
 
 \section{Fluid constitutive relations}
 
@@ -474,7 +651,7 @@ following relations\footnote{Shamelessly stolen from Wikipedia (accessed
 Naturally, remembering those formulas is not useful, but it is good to 
 remember that they exist. We will now introduce a theorem that will do 
 a lot of work for us.
-\begin{theorem}[Cayleya–Hamilton theorem]
+\begin{theorem}[Cayley–Hamilton theorem]
    Every square matrix over a commutative ring (such as the real or 
    complex numbers or the integers) satisfies its own characteristic equation.
 \end{theorem}
@@ -625,10 +802,41 @@ to that of the thermodynamic pressure; in other words, this term is associated
   to determine experimentally the bulk viscosity.
   }\footnotemark[\value{footnote}]
 \end{quote}
-As stated arrive, the justification of Stokes' hypothesis is complex and 
-it need not always apply. 
-\section{Momentum equation II: Navier-Stokes}
-\paragraph{Euler equation}
+As stated above, the justification of Stokes' hypothesis is complex and 
+this simplification need not always apply. 
+\section{Momentum equation}
+\paragraph{Inviscid fluid}
+After establishing the formula for \(\bm{\tau}\) we can finally plug it in and
+reach the \say{complete} form of momentum equation. It will be easier if we write 
+\autoref{eq::momentum_general_form} again:
+\[
+  \pdv{\rho \vb{v}}{t} 
+  + \div{\qty(\rho\vb{v}\vb{v} )}  =
+  \div\bm{\tau} + \rho\vb{f}.
+\]
+For now, we assume that the fluid is inviscid. As we have mentioned, this 
+means that the only quantity contributing to the stresses is the pressure 
+\(p\), resulting in \(\tau_{ij} = -p\delta_{ij}\). We need to compute the 
+divergence of that:
+\[
+  \div{\bm{\tau}} 
+  = \hat{\vb{e}}_i \pdv{\tau_{ij}}{x_j} 
+  = - \hat{\vb{e}}_i \pdv{p \delta_{ij}}{x_j} 
+  = - \hat{\vb{e}}_i \pdv{p}{x_i}
+  = -\grad{p}.
+\]
+We again used the fact that \(\delta_{ij}\) is the \say{ranamer} of indices.
+We plug that into the general momentum equation and we reach the conservation law 
+from the Euler system of equations:
+\begin{equation}
+  \pdv{\rho \vb{v}}{t} 
+  + \div{\qty(\rho\vb{v}\vb{v} )}  =
+  - \grad{p}
+  + \rho\vb{f}.
+\end{equation}
+
+\paragraph{Viscous fluid}
+We 
 
 
 
