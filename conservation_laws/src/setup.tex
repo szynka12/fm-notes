@@ -1,0 +1,57 @@
+% setting ptions for included pictures
+\usepackage{graphicx} % allow embedded images
+\graphicspath{{graphics/}} % set of paths to search for images
+\setkeys{Gin}{
+  width=\linewidth,
+  totalheight=\textheight,
+  keepaspectratio
+}
+
+\hypersetup{colorlinks}
+
+\usepackage[compatibility=false, font=footnotesize]{caption}
+% * options are necessary to fix the bug that autoref was causing,
+%   figure was constantly changed to section
+\DeclareCaptionFont{blue}{\color{blue}}
+\captionsetup{labelfont={blue}}
+
+% color and color palettes
+\usepackage{xcolor}
+
+% drawings collor palette
+\definecolor{p11}{HTML}{33cfff}
+\definecolor{p12}{HTML}{ffa733}
+\definecolor{p13}{HTML}{ff4133}
+
+
+
+% drawing inside tex
+\usepackage{tikz} 
+
+% math things
+\usepackage{
+  amsmath,  % extended mathematics
+  siunitx,  % non-stacked fractions and better unit spacing
+  bm,       % bold math symbols
+  physics,  % a set of usefull symbols for differentiation 
+  theorem   % provides theorem env
+}
+
+% table things
+\usepackage{
+  booktabs, % book-quality tables
+  multicol  % multiple column layout facilities
+} 
+
+% quoting text and friends
+\usepackage{fancyvrb}         % extended verbatim environments
+\fvset{fontsize=\normalsize}  % default font size for fancy-verbatim environments
+\usepackage{dirtytalk}        % provides \ay command for easy quiting 
+
+% citing sources
+\usepackage{natbib}
+\setcitestyle{authoryear}
+\bibliographystyle{plainnat}
+
+% misc 
+\usepackage{lipsum}   % filler text

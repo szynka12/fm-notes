@@ -1,0 +1,37 @@
+
+\begin{tikzpicture}
+	\fill [p11, fill opacity = 0.2] (0cm, 0cm) -- (-2cm * 0.75, -1.5cm * 0.75) -- (0cm, 2cm) -- cycle;
+	\fill [p12, fill opacity = 0.2] (0cm, 0cm) -- (-2cm * 0.75, -1.5cm * 0.75) -- (2cm, 0cm) -- cycle;
+	\fill [p13, fill opacity = 0.2] (0cm, 0cm) -- (2cm, 0cm) -- (0cm, 2cm) -- cycle;
+	\fill [p13, fill opacity = 0.2] (0cm, 0cm) -- (2cm, 0cm) -- (0cm, 2cm) -- cycle;
+
+	\draw [p11, -latex, ultra thick]
+	(-0.2cm, 0.3cm) -- (-1.7cm, 1cm) node [above] {$\vec{f}_1$};
+	\draw [p13, -latex, ultra thick]
+	(0.5cm, 0.3cm) -- (2.7cm, 1cm) node [above] {$\vec{f}_3$};
+	\draw [p12, -latex, ultra thick]
+	(0.3cm, -0.2cm) -- (1.5cm, -1cm) node [above] {$\vec{f}_2$};
+
+	\draw [-latex, thick, p11] (0cm, 0cm) -- (2.75cm, 0cm) node [above] {$x_1$};
+	\draw [-latex, thick, p12] (0cm, 0cm) -- (0cm, 3cm) node [above] {$x_2$};
+	\draw [-latex, thick, p13] (0cm, 0cm) -- (-2cm, -1.5cm) node [above] {$x_3$};
+	\draw [thick] (-2cm * 0.75, -1.5cm * 0.75)  -- (2cm, 0cm) -- (0cm, 2cm) -- cycle;
+	% \fill [pattern=north west lines, pattern color=black] (-2cm * 0.75, -1.5cm * 0.75)  -- (2cm, 0cm) -- (0cm, 2cm) -- cycle;
+
+	\draw [p13, thick] (0.5cm, 0.5cm) -- (2cm, 2cm)
+	node [pos=1, above] {$\dd S_3$}
+	node [draw=p13, circle, fill=p13, inner sep=1pt, pos=0]  {};
+	\draw [p11, thick] (-0.2cm, 0.5cm) -- (-1cm, 2cm)
+	node [pos=1, above] {$\dd S_1$}
+	node [draw=p11, circle, fill=p11, inner sep=1pt, pos=0]  {};
+	\draw [p12, ultra thick] (-0.1cm, -0.4cm) -- (-1cm, -1.5cm)
+	node [pos=1, below] {$\dd S_2$}
+	node [draw=p12, circle, fill=p12, inner sep=1pt, pos=0]  {};
+	\draw [black, thick] (0cm, -0.65cm) -- (1cm, -1.5cm)
+	node [pos=1, below] {$\dd S$};
+
+	\draw [ultra thick, -latex] (0.2cm, 0.3cm) -- (1.3cm, 2cm)
+	node [above] {$\vec{f}$};
+
+
+\end{tikzpicture}

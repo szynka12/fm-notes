@@ -1,0 +1,735 @@
+\documentclass[justified, nobib]{tufte-handout}
+
+\title{Heavily annotated derivation of the conservation laws of fluid 
+  mechanics\thanks{%
+    Greatly inspired by the lectures of prof. Andrzej Styczek, 
+    scientist and teacher at Faculty of Power and Aeronautical Engineering of
+    Warsaw University of Technology.}}
+
+\author[Wojciech Sadowski]{Wojciech Sadowski}
+
+%\date{28 March 2010} % without \date command, current date is supplied
+
+% \geometry{showframe} % display margins for debugging page layout
+
+\input{src/setup.tex}
+\input{src/commands.tex}
+\input{src/env.tex}
+\input{src/symbols.tex}
+
+
+\begin{document}
+
+\maketitle% this prints the handout title, author, and date
+
+\begin{abstract}
+\noindent
+  \lipsum[1]{}
+\end{abstract}
+
+\section{The basics}
+
+\subsection{What is a fluid?}
+\textsc{We will consider a fluid as a continuous substance,} which fills fully
+any available space. We therefore are effectively \emph{neglecting the discrete
+nature of matter.} In simple terms, since the amount of fluid molecules in a
+small volume of matter is obscenely large (remember the Avogadro number%
+\footnote{
+  The \wikilink[Avogadro constant]{Avogadro\_constant} denotes a number of
+  particles of a substance per a \si{mol} of that substance. It is equal to
+  \SI{6.02214076e23}{mol^{-1}}. For reference, one \si{mol} of an ideal gas
+  under one atmosphere of pressure and at \SI{25}{\degree C} fits in a
+  approximately \SI{30}{cm} cube.\wikicite{Molar\_volume\#Ideal\_gases}
+} 
+\(N_\mathrm{A}\approx\SI{6.022e23}{mol^{-1}}\)) this is a fair assumption. We
+will provide better, more mathematical justification for this modelling
+approach shortly, but for now, let's discuss why the opposite, i.e.\ directly
+treating the fluid as a \emph{set of molecules,} is cumbersome.
+
+The intuitive idea that we could obtain macroscopic fluid parameters, like
+density or temperature, from the information about the states of all the
+particles is correct. Unfortunately, it is also a rather unpractical idea, as it
+is painfully difficult to describe the motion of each and every molecule
+constituting the substance, i.e.\ gather the required information. There are
+two main difficulties for such process. Apart from the obvious problem of
+computationally expensive integration all of the trajectories,%
+\footnote{%
+  The path of motion \(\vec{x}(t)\) and velocity \(\vec{v}(t)\) of a point
+  particle with mass \(m\) can be computed by integrating Newton's second law
+  of motion
+  \[
+    m\dv[2]{\vec{x}}{t} = \vec{F},
+  \]
+  assuming that \(\vec{F}(t, \vec{x})\) is the force acting on the particle.
+}
+we also encounter a tricky puzzle of determining an accurate initial conditions
+for every molecule. In such systems, a small error in determining these
+starting parameters will unfortunately lead to considerable inaccuracies
+further down the line. Hence, we neglect the discrete nature of matter and we
+imagine that the medium, i.e.\ the fluid, consists of \emph{continuous set} of ideal
+particles%
+\footnote{%
+	A particle that might have mass, charge or some other property, however it does
+	not have any dimension, volume or as nicely stated in
+	\wikilink{Point\_particle}, it does not occupy space.
+} 
+(think about in the same way as about infinite set of real numbers).
+
+Before we move on, we still need to define when it is a good idea to use the
+\emph{continuum mechanics} formulation of the fluid flow. Here, we stumble upon
+an important physics concept: \emph{modelling}. The assumption of continuity of
+the fluid is to some extent an approximation of reality, which can be very
+useful to describe what we actually observe. The reality is naturally very
+complex and we all know that \emph{less is more:} eliminating unnecessary
+details often leads to clearer picture. However sometimes, it might be
+difficult to \say{guesstimate} if we are not committing a grave error by using
+a modelling approach, which simplifies reality too much. So it is undeniably
+useful to have a mathematical indicator of how \say{continuous} given problem
+is. 
+
+Fortunately, we do have a device like that! We can compute a ratio of the 
+molecule mean free path \(\lambda\) to the characteristic dimension of the 
+flow \(L\). The first one describes the distance covered by a particle before 
+it changes direction, usually due to a collision. This fraction is the definition
+of the \wikilink[Knudsen number]{Knudsen\_number}
+\[
+  \mathrm{Kn} = \dfrac{\lambda}{L},
+\]
+which differentiates flow regimes~\citep{collin2014}. As \(\mathrm{Kn}\)
+approaches and climbs over \num{e-3}, more and more effects related to the
+\say{granularity} of matter have to be included (see
+\autoref{tab:kn-regiemes}). For \(\mathrm{Kn} \ll 1\) we can assume continuity
+of the fluid, which we will do for the remainder of this text. 
+
+\begin{margintable}
+  \caption{Flow regimes as a function of \(\mathrm{Kn}\) \citep{collin2014}.
+  \emph{Continuum flow} is described by Navier-Stokes equations. In \emph{slip
+  flow} they are still applicable, however special treatment of walls is
+  necessary due to molecular effects. The equations became invalid in
+  \emph{transitional flows}, however the effect of collisions between molecules
+  is still significant. Finally, in \emph{free molecular flow} this phenomenon
+  can also be neglected.}
+  \label{tab:kn-regiemes}
+  \centering
+  \begin{tabular}{ll}
+  \toprule
+    \(\mathrm{Kn}\) range & Flow type \\ \midrule
+    \(\mathrm{Kn} < \num{e-3}\)                 & continuum\\
+    \( \num{e-3} < \mathrm{Kn} < \num{e-1}\) & slip\\
+    \( \num{e-1} < \mathrm{Kn} < \num{10}\)  & transitional\\
+    \( \mathrm{Kn} < \num{10}\)              & free molecular\\
+  \bottomrule
+  \end{tabular}
+\end{margintable}
+
+\newthought{Circling back} to our deliberations about how to describe the
+movement of the fluid, we can \emph{de facto} equate it to the movement of
+these material points. As it turns out, such a description can be used for
+fluids, solids and \say{things} in between. In comparison to solids, which have
+some \say{rigid} reference configuration or shape, fluids do not exhibit this
+property. The relative positions of the points can be arbitrary and changing.
+Naturally, while approaching a fluid mechanics problem, we have to make certain
+assumptions about this movement, otherwise deducing anything about the problem
+would be impossible. For example, sometimes we might assume that volume of
+fluid has to be conserved (or that the density is constant) but that is, of
+coarse, a simplification. A useful and accurate one in situations of
+non-varying thermodynamic state of the medium.
+
+If this \say{reference shape} does not exist, than the deformation (or strain)
+of the fluid can be completely arbitrary. Perhaps at first this thought feels
+unintuitive, but if you consider the water spilled on the floor and left to its
+own devices, it will deform greatly, covering a big area and even seep into the
+cracks, potentially making you call the handyman to fix the broken flooring.
+Yet, there has to be some set of internal forces that govern the flow. We will
+assume that they do not depend on the deformation, but we still have to answer
+the question: what generates these forces inside the fluid? One obvious answer
+is the change of volume, i.e.\ compression, but what else?
+
+\newthought{We will consider the fluids} in which the forces depend on the rate
+of deformation. These forces clearly will \say{want} to stop, or counteract the
+deformation occurring in the fluid. As we have already discussed, the
+deformation itself does not seem to be significant. However, it is important to
+note, that this is only a simplified model, not truly existing in nature. In
+the same way as the assumption of incompressibility, which is never
+\emph{really} true, as each fluid is compressible, it is a useful lie that does
+a good job describing the reality as we can measure it.%
+\footnote{This assumption does not cover every \say{flowing} substance. For
+example, \wikilink[Bingham plastic]{Bingham\_plastic} resists the deformation
+until yield stress value and only then starts flowing. Mud, slurry, toothpaste
+are real examples of such fluids.}
+For the most general fluid we could write
+\[
+	Z(t, \stressT, \dot{\stressT}, \tnsr{D}, \dot{\tnsr{D}}, \dots) = 0,
+\]
+and call the above a \emph{constitutive equation}, i.e.\ the relation defining
+our material. It describes connection between the time \(t\), stresses
+\(\stressT\), deformation \(\strainT\), the rates of those things (indicated by
+the same letters with a dot accent) and potentially other parameters.
+
+As you can see, it can be bad. The parameters in the above relations could
+depend on each other or even they could depend on each other non-locally!%
+\footnote{%
+	For example, stress in point \(a\) depends on the state in point \(b\).
+}
+Or even worse, they might be influenced by the history of the those parameters.%
+\footnote{%
+	That would be non-locality in time, if you want to see an example of such
+	\say{difficult} relations in hydrodynamics you can read about
+	\wikilink[Basset force]{Basset\_force} or \wikilink[BBO
+		equation]{Basset-Boussinesq-Oseen\_equation}.
+}
+Fortunately, for most of classical use cases we can confine ourselves to much
+simpler relations. Only the following things will be considered:
+\begin{enumerate}[(i)]
+	\item only \(\stressT\) and \(\dot{\strainT}\) are important;
+  \item the relation between them is local, i.e.\ it is depend on the values in
+    the same place and time;
+  \item we should be able two solve for \(\stressT\), that is write 
+    \(\stressT = g(\dot{\strainT})\) where \(g\) is some function with tensor argument;
+	\item the relationship should not have any preferential direction. 
+\end{enumerate}
+To illustrate better the last point, the fluid, and hence the constitutive
+relation, should not behave differently in different coordinate system. Or to
+frame it as a simple example, considering a coordinate system with axes \(x\),
+\(y\) and \(z\), the fluid flowing along the \(x\) direction should not behave
+differently than the same fluid moving along \(y\) axis.%
+\footnote{Perhaps we are getting ahead of ourselves, but in practice, this will
+require \(\stressT\) and \(\dot{\strainT}\) to be symmetric tensors}
+
+
+\subsection{What are stresses?}\label{ch:stresses}
+\textsc{We know what a force is.} Intuitively,
+when thinking about fluids or materials, the stress is a force acting on
+a surface. We also know that we can add forces, so we can safely assume that
+the sum of forces acting on parts of the surface have to add up to the force
+acting on the whole surface. Let's define force differential \(\dd{\vec{F}}\) acting
+on a small part of the surface \(\dd S\), in a following way
+\[
+	\dd \vec{F} = \vec{f}\dd{S},
+\]
+so that \(\vec{f}\) becomes a force per unit surface, so surface force density.
+
+Let us consider a Cartesian coordinate system \((O, x_1, x_2, x_3)\) and
+a small tetrahedron with walls \(\dd S_1\), \(\dd S_2\), \(\dd S_3\) and
+closed by the wall \(\dd S\) (see \autoref{fig:forcetetrahedron}). There
+can be infinite amount of such tetrahedrons, however the numbered walls
+\(\dd S_i\) are always laying on the same planes, perpendicular to the
+axis of the system. On the other hand, wall \(\dd S\) changes its position
+along with the plane its laying on and the surface area.
+
+\begin{marginfigure}
+	\centering
+  \input{tikz/elementary_tetrahedron.tex}
+	\caption{Elementary tetrahedron}
+	\label{fig:forcetetrahedron}
+\end{marginfigure}
+
+If this volume is in equilibrium, than the forces acting on the walls,
+\(\vec{f}_1\), \(\vec{f}_2\), \(\vec{f}_3\) and \(\vec{f}\) respectively,
+add up to \(\vec{0}\)
+\begin{equation}\label{eq::equilibrium}
+  {\color{p11}\vec{f}_1 \dd{S_1}}
+  + {\color{p12}\vec{f}_2 \dd{S_2}}
+  + {\color{p13}\vec{f}_3 \dd{S_3}}
+	+ \vec{f} \dd{S} = \vec{f}_i \dd{S_i} + \vec{f} \dd{S} = \vec{0}.
+\end{equation}
+Let us divide the equation by \(\dd{S}\)
+\[
+	\vec{f}_i \dfrac{\dd{S_i}}{\dd{S}} + \vec{f} = \vec{0}.
+\]
+We do that because we notice that the fraction \(\dd{S} / \dd{S_i}\) is
+equal to the cosine of the angle between the normal of \(\dd{S}\) and
+the \(i\)-th axis of the coordinate system (believe me, or prove it
+if you don't). We can also say that \(\cos(\bm{n}, x_i) = n_i\) and we will
+use that later.
+
+In \autoref{eq::equilibrium} we didn't assume anything about the directions
+of the forces, however, if the tetrahedron is in equilibrium, than the sum of
+\(\vec{f}_i\) has to be opposite to \(\vec{f}\). Hence, we can flip it noting
+that if we change direction, the sign changes as well, i.e.\
+\(\vec{f}(\vec{n}) = -\vec{f}(-\vec{n})\).
+After substituting our \say{revolutionary} findings about the
+\(\dd{S} / \dd{S_i}\) ratio equal to the cosine as well, we are left with the following relation
+\[
+	\vec{f} = \vec{f}_i \dfrac{\dd{S_i}}{\dd{S}}
+	= \vec{f}_i\cos(\bm{n}, x_i)
+	= \vec{f}_i n_i
+\]
+
+Now, considering that each force has three components, which for example for
+\(\vec{f}_1\) we will denote as \(f_{11}\), \(f_{12}\) and \(f_{13}\), we can
+also write the equation for \(k\)-th component of \(\vec{f}\)
+\[
+	f_k = n_1 f_{1k} + n_2 f_{2k} +n_3 f_{3k} = n_\alpha f_{\alpha k}.
+\]
+So, we actually have arrived at something! We have \emph{nine} numbers giving
+together the components of \(f_{\alpha k}\), which describe the forces acting
+on the surface closing our small tetrahedron. Furthermore, if you shrink the
+tetrahedron to a point (we already used differentials of surfaces), what we
+wrote above still holds! This means that, the force density acting on a surface
+in the fluid depends on those nine numbers and the orientation of the surface.
+
+\begin{marginfigure}
+  \input{tikz/stress_visualisation.tex}
+  \caption{Schematic visualsation of force generating normal or shear 
+  stress depending on the rotation of the surface it acts on.}
+  \label{fig:stress_visualisation}
+\end{marginfigure}
+
+
+We will call those numbers stresses. Make a though experiment: imagine a force
+acting in a chosen direction, and a surface perpendicular to this force. This
+is aligned with the classical definition of pressure, right? Now, rotate this
+surface, so that the force vector lies on the surface. Force acting along the
+surface can be understood as shear. That's how scissors work! Now, rotate the
+surface keeping the normal as an axis. The force is now \say{shearing} the
+surface in a different direction, so for one force vector we can have one normal
+(perpendicular to the surface)
+stress and we observed two shear stresses. With that (hopefully) intuitive
+explanation we can say that among the nine numbers, we will have \emph{three}
+normal stress components and \emph{six} components related to shear stress.
+
+The only problem is the fact that our notation is cumbersome; we have two \(f\)
+symbols. Let's set the magic nine numbers (they will get a name soon, I promise!)
+as \(\stress_{ij}\), giving us:
+\[
+	f_i = n_\alpha \stress_{\alpha i}
+\]
+
+\paragraph{Stress tensor}
+Okay, so as I said, the nine-number-thingy needs a name. You saw the paragraph
+title, you might already now what it is. That said, this is written in style of
+a lecture, so please make a dramatic pause in your brain before reading the end of the
+next sentence. We will call \(\stress_{ij}\) the \emph{stress tensor}.
+
+But what is a tensor, you might ask? My colleague said at some point\footnote{In Dresden, on the 1st of June, during breakfast, around 9:30 AM.} that a tensor
+is just a \say{glorified vector}. This is not really true, but it is a useful starting point for a discussion.
+In fact, some vectors
+\emph{are} tensors. Generally, a tensor is a \say{geometrical thing}, that is,
+it describes some effect independent on the coordinate system. Velocity vector
+is a tensor or order 1, as it describes that an object moves in a specific direction
+with a specific velocity\footnote{Not every vector is a tensor, e.g.\ the
+	position vector is always dependant on the chosen coordinate system.}. If we
+change the basis (coordinate system), the representation, that is the components
+of the vector will change, but the vector itself still points in the same
+direction. \emph{It is a geometric concept.} Similarly to our velocity example,
+stress tensor also describe a distribution of forces inside the material. In
+nature there are no principal, favoured directions, so the object describing it
+should be a tensor.
+
+So, there is some geometric transformation
+that tells us how to change the components of a tensors, and tensors
+are objects that obey this transformation.
+This paraphrase of a mathematical mathematical definition is
+frankly quite unhelpful\footnote{% 
+For interested here is slightly paraphrased version of a definition,
+again stolen from Wikipedia: A tensor of type \((p,q)\) is an assignment
+of a multidimensional array
+\[
+	T^{i_1\dots i_p}_{j_{1}\dots j_{q}}[\mathbf{f}]
+\]
+to each basis \(\vec{f} = (\vec{e}_1, \dots, \vec{e}_n)\) of an \(n\)-dimensional
+vector space such that, if we apply the change of basis
+\[
+	\mathbf{f}\mapsto \mathbf{f}\cdot R = \left( \mathbf{e}_i R^i_1, \dots, \mathbf{e}_i R^i_n \right)
+\]
+then the multidimensional array obeys the transformation law
+\[
+	T^{i'_1\dots i'_p}_{j'_1\dots j'_q}[\mathbf{f} \cdot R] = \left(R^{-1}\right)^{i'_1}_{i_1} \cdots \left(R^{-1}\right)^{i'_p}_{i_p}
+	T^{i_1, \ldots, i_p}_{j_1, \ldots, j_q}[\mathbf{f}]
+	R^{j_1}_{j'_1}\cdots R^{j_q}_{j'_q} .
+\]
+}.
+So we will cheat a little
+and describe a tensor with as much verbosity as is necessary for our use case.
+
+Let's define some operations first and show them on the example of the stress
+tensor, which we will represent here as
+\[
+	\stressT = \stress_{ij}\hat{\vec{e}}_i \hat{\vec{e}}_j.
+\]
+We used the versors \(\hat{\vec{e}}_i\) defining our chosen coordinate system.
+They are multiplied in a weird way, its neither scalar nor vector product. This
+operation is also sometimes written with
+the \(\otimes\) symbol (\(\hat{\vec{e}}_i \otimes \hat{\vec{e}}_j\)) and
+is called tensor or outer product.
+
+The scalar product \(\vec{n}\dotproduct\stressT\) can be written easily
+with index notation. We know that \(\vec{n} = n_k \hat{\vec{e}}_k\), so
+building on that we can write
+\[
+	\vec{n}\dotproduct\stressT
+	= n_k \hat{\vec{e}}_k \dotproduct \qty(\stress_{ij}\hat{\vec{e}}_i \hat{\vec{e}}_j)
+	= n_k \stress_{ij} \hat{\vec{e}}_k \dotproduct \hat{\vec{e}}_i \hat{\vec{e}}_j
+	= n_k \stress_{ij} \qty(\hat{\vec{e}}_k \dotproduct \hat{\vec{e}}_i) \hat{\vec{e}}_j.
+\]
+We can think a little about the term \(\hat{\vec{e}}_k \dotproduct \hat{\vec{e}}_i\).
+It is a dot product of two versors. It can be either equal to 1 if they are
+the same (\(k=i\)) or 0 if they are different. There is a term for that, called
+\emph{Kronecker delta}, defined as
+\[
+	\delta_{ij} = \begin{cases}
+		0 & \text{if } i \neq j, \\
+		1 & \text{if } i=j.\end{cases}
+\]
+So we can write that our product is equal to
+\(n_k \stress_{ij}\delta_{ki} \hat{\vec{e}}_j \). It does not help us yet, but if
+we said that \(k\) has to be equal to \(i\), otherwise the terms in the sum
+will be 0, we might as well write \(i\) instead of \(k\)\footnote{If you are
+	confused try it out on paper, write every term, eliminate the ones equal to 0
+	and collapse the term to the indexed expression.}, i.e.\
+\[
+	\vec{n}\dotproduct\stressT = n_i \stress_{ij} \hat{\vec{e}}_j = f_j \hat{\vec{e}}_j.
+\]
+In the above, we eliminated \(\delta_{ii}\) as it is always equal to 1. In fact,
+\(\delta_{ij}\) is sometimes called an \say{index renamer} as it renames index
+\(j\) to \(i\) or \textit{vice versa}.
+
+Okay, so what have we learned? The dot product of a tensor with a vector gives
+us a vector. Will multiplication from the left, which we performed above, be
+different from the one from the right, that is \(\stressT\dotproduct\vec{n}\)?
+Yes\footnote{I am to lazy to write it down, but it might be a good training
+	for you.}. That said, it would be the same if \(\stress_{ij} = \stress_{ji}\).
+
+So a lot of hints have been dropped. The tensor behaves a little bit like a
+matrix. In fact the matrix is often used to \emph{represent} a tensor in a
+chosen coordinate system, but the tensor itself, like a velocity vector, is
+independent from the chosen coordinate system\footnote{Stress tensor has rank 2; we
+	used two versors, so called diad, to define it.}. This matrix can be multiplied with a vector to give
+another vector. If the matrix is symmetric, product from both sides will return vectors
+with the same components. Kronecker delta is also a tensor itself, represented by
+a unit matrix \(\tnsr{I}\).
+
+\subsection{Strain-rate (deformation-rate) tensor}
+It was mentioned, that we are interested in a tensor defining a rate of
+deformation, or what is usually called \emph{strain-rate tensor} in
+literature. We should derive it. Let's start with a series expansion of
+velocity field around coordinate \(\vb{r}\):
+\[
+	v_i(t, \vb{r} + \dd{\vb{x}}) = v_i(t, \vb{r}) + \pdv{v_i}{x_k}\dd{x_k}
+	+ \dots
+\]
+If \(\dd{x}\rightarrow\vb{0}\), we disregard the higher order terms and
+rewrite the above as
+\[
+	v_i(t, \vb{r} + \dd{\vb{x}}) = v_i(t, \vb{r})
+	+ \frac{1}{2}\qty(\pdv{v_i}{x_k} + \pdv{v_k}{x_i})\dd{x_k}
+	+ \frac{1}{2}\qty(\pdv{v_i}{x_k} - \pdv{v_k}{x_i})\dd{x_k}.
+\]
+The first term on the right describes simple translation of the fluid parcel.
+The third (similar to the expression for the curl of velocity field) defines
+rotation. Both of these can be applied to the rigid, unchanging in shape,
+fluid parcel. We are left with the second one, describing the change of
+velocity due to \say{non-rigid} strain or deformation of the fluid volume.
+We can write this change of velocity mathematically as
+\begin{equation}\label{eq::strain_rate_tensor}
+	\dd{v^\mathrm{strain}_k}
+	= \frac{1}{2}\qty(\pdv{v_i}{x_k} + \pdv{v_k}{x_i})\dd{x_k}
+	= \dot{D}_{ik}\dd{x_k}
+\end{equation}
+The tensor \(\dot{\vb{D}}\) is the strain-rate tensor and very importantly
+it is \emph{symmetric}!
+
+
+
+\section{Road towards momentum equation}
+
+\subsection{Force acting on a surface}
+Armed with the stress tensor we can now compute the force acting on any
+closed surface:
+\[
+	\vb{F} = \oint\limits_S \vb{f} \dd{S}
+	= \oint\limits_S \vb{n}\bm{\tau}
+	= \hat{\vb{e_i}}\oint\limits_S n_j \tau_{ji}\dd{S}
+\]
+Now we can use the Greens theorem\footnote{In polish it is called
+	Green-Gauss-Ostrogracki (GGO) theorem.} to convert the surface integral
+to a volume one. Or simply, when mathematicians aren't looking, it is
+a theorem about changing \(S\) for \(\Omega\) and \(n_j\) for
+\(\partial/\partial x_j\). Naturally, \(S\) is the surface of \(\Omega\).
+Let's do the deed
+\[
+	\vb{F}
+	= \hat{\vb{e_i}}\oint\limits_S n_j \tau_{ji}\dd{S}
+	= \hat{\vb{e_i}}\int\limits_\Omega \pdv{\tau_{ji}}{x_j}\dd{\Omega}
+	= \int\limits_\Omega \div\bm{\tau} \dd{\Omega}
+\]
+
+\subsection{Body force}
+We have written an expression for surface forces. What about the forces
+acting from the \emph{inside}, like gravity? Here we can say
+\[
+	\vb{F} = \int\limits_\Omega \vb{f} \dd{m}
+\]
+Pardon my messy notation, but now \(\vb{f}\) is the \emph{volume} density
+of force. We also wrote \(\dd{m}\) which is the mass differential. It is
+simply given as \(\rho\dd{\Omega}\), where the first in the product is the
+density of the material and the second is the volume differential. So
+\[
+	\vb{F} = \int\limits_\Omega \rho\vb{f} \dd{\Omega}
+\]
+
+\subsection{Derivation starts}
+We finally start deriving the momentum equation of a continuous medium.
+We start from basic principles
+\[
+	\dv{t}\text{momentum} = {\text{force}}
+\]
+We first need to handle the momentum part. We divide the fluid into small,
+moving parts. All the parts give the sum of the whole momentum, so we write
+it as an integral
+\[
+	\text{momentum} = \int\limits_\Omega \dd{ (\text{momentum})}.
+\]
+We will handle the forces in a second. The differential of linear momentum
+can be simply expressed as \(\vb{v}\dd{m} = \rho\vb{v} \dd{\Omega}\), where
+\(\rho\) is the density. We already wrote the expression for the forces so
+if we assemble everything we get this
+\begin{equation}\label{eq::mom_part}
+	\dv{t}\int\limits_\Omega \rho\vb{v} \dd{\Omega} =
+	\int\limits_\Omega  \div\bm{\tau} + \rho\vb{f} \dd{\Omega}
+\end{equation}
+This is a simple equation, but it does not give us much insight. On the other
+hand it describes the movement of \emph{everything}. One important thing to
+note is that the volume \(\Omega\) is completely arbitrary. \emph{We can
+	chose it as we see fit.} We will use this property later to obtain
+differential versions of the equations.
+
+\subsection{Reynolds transport theorem}
+We are now standing in front of a difficult problem. We have to
+differentiate an integral, which usually is not a sophisticated
+issue. However, in our case, the integration domain \(\Omega\)
+is not a rigid body. Instead, it deforms and changes shape as the time progresses
+and the fluid flows, i.e.\ \(\Omega = \Omega(t)\). In short it depends on
+\emph{the variable with respect to witch we differentiate}.
+Fortunately, we have a tool for that: Reynolds Transport Theorem.
+
+\begin{theorem}[Reynolds transport theorem, RTT]
+	Given:
+	\begin{enumerate}[(i)]
+		\item a material volume \(\Omega\), whose shape and position are varying with time,
+		      i.e.\ \(\Omega = \Omega(t)\);
+		\item an extensive variable \(\Phi = \Phi(t)\) with its intensive counterpart
+		      \(\phi = \phi(t, \vb{x})\)  defined inside the material volume.
+	\end{enumerate}
+	The total derivative of \(\Phi\) with respect to time can be formulated as:
+	\begin{equation}
+		\dv{\Phi}{t} = \dv{t} \int\limits_{\Omega(t)} \phi \dd{\Omega}
+		= \int\limits_{\Omega(t)} \dfrac{D\phi}{Dt} + \phi \div{\vb{v}} \dd{\Omega}
+	\end{equation}
+\end{theorem}
+
+As can be seen above, the theorem connects the time derivative of an integral
+similar to ours with the integral of derivatives. The expression \(D\phi/Dt\)
+is a substantial derivative, defined as
+\[
+	\dfrac{D\phi}{Dt} = \pdv{\phi}{t} + v_i\pdv{\phi}{x_i}
+\]
+To showcase how it works, we will use RTT to derive the continuity equation.
+
+\subsection{Detour for conservation of mass}
+The mas is conserved. This can be written as
+\[
+	\dv{t}\int\limits_\Omega \dd{m} =
+	\dv{t}\int\limits_\Omega \rho\dd{\Omega} = 0
+\]
+We see the time derivative of an integral. The alarm bells have sounded.
+The war horns are sounding the music of battle. The ghost of all scientists
+pushing the boundaries of fluid dynamics, since human first managed to produced
+moonshine by heating up a piece of copper pipe, are eagerly awaiting our next
+move. We were preparing for this moment
+for the last 10 minutes while reading last paragraph about RTT.
+\emph{We what to do.}
+\[
+	\dv{t}\int\limits_\Omega \rho\dd{\Omega} =
+	\int\limits_\Omega  \dfrac{D\rho}{Dt} + \rho\div{\vb{v}}\dd{\Omega}
+	=  0
+\]
+The expression under the integral can be further expanded to
+\[
+	\int\limits_\Omega  \pdv{\rho}{t} + (\vb{v}\dotproduct\grad)\rho
+	+ \rho\div{\vb{v}}\dd{\Omega}
+\]
+and if we note that
+\[
+	(\vb{v}\dotproduct\grad)\rho + \rho\div{\vb{v}} =
+	v_i \pdv{\rho}{x_i} + \rho\pdv{v_i}{x_i} = \pdv{\rho v_i}{x_i}
+	= \div{(\rho \vb{v})}
+\]
+we arrive at (almost) final result
+\[
+	\int\limits_\Omega  \pdv{\rho}{t} + \div{(\rho \vb{v})}\dd{\Omega} = 0
+\]
+Now, we will use an observation about the integration region from the
+previous paragraphs, that is, it can be chosen arbitrarily. We haven't
+made any assumptions about it, so intuitively it shouldn't matter.
+
+Let's think about for a second. For the sake of shortening the notation
+lets denote \({\partial\rho}/{\partial t} + \div{(\rho \vb{v})}\) as \(X\). For a
+completely arbitrary region \(\Omega\), the integral \(\int_\Omega X \dd{\Omega}\)
+is always equal to zero. This we know from the derived mass conservation equation.
+Of coarse, it will be true when \(X=0\) everywhere. Still, can it be the case that
+that \(X\neq0\) but the integral is equal to 0?
+
+For that to be true, the region \(\Omega\) should be composed of \(\Omega^+\),
+a part in which \(X>0\), and \(\Omega^-\) where \(X<0\). Together, positive
+contribution of \(\Omega^+\) and negative from \(\Omega^-\) give null value
+of the integral.
+
+But wait! We said, that the \(\Omega\) can be chosen arbitrarily. So what
+if we chose \(\Omega = \Omega^+\)? We know that the integral has to be zero,
+but that is impossible! We established that in this region \(X\) is strictly
+positive and, therefore, the integral has to be positive as well. We have
+reach a result confiction with our assumptions: \emph{this option is
+	impossible.} We can safely say, that the only way for the integral to
+be null for each region, is for the integrated expression to equal to 0
+in each point in the region. So we can simply write
+\[
+	\pdv{\rho}{t} + \div{(\rho \vb{v})} = 0
+\]
+which competes the derivation of mass conservation law.
+
+
+\subsection{Back to momentum}
+We use RTT agian, this time on \autoref{eq::mom_part}. We get:
+\[
+	\int\limits_\Omega \pdv{\rho \vb{v}}{t}
+	+ \div{\qty(\rho\vb{v}\vb{v} )} \dd{\Omega} =
+	\int\limits_\Omega \div\bm{\tau} + \rho\vb{f} \dd{\Omega}
+\]
+The product of velocity \(\vb{v}\vb{v}\) is a tensor. We can also write
+it as \(v_i v_j\). We note that we can actually accumulate the terms into
+one integral equal to zero. We saw something like that before, right?
+We \emph{again} know what to do! After dropping the integration we are
+left with:
+\begin{equation}\label{eq::momentum_general_form}
+	\pdv{\rho \vb{v}}{t}
+	+ \div{\qty(\rho\vb{v}\vb{v} )}  =
+	\div\bm{\tau} + \rho\vb{f}
+\end{equation}
+which is a general, differential form of the momentum conservation law.
+However, in order to move forward we have to actually handle the issue
+mentioned in the very beginning: defining a description for the stress
+tensor of our fluid, or the \emph{constitutive relation}.
+
+\section{Fluid constitutive relations}
+
+We should now try to derive the formulas for \(\bm{\tau}\) so we can plug
+them into the momentum equation, be done with this derivation and go home.
+Let's start with a simple model of an \emph{inviscid} fluid. If the fluid
+has no viscosity, than pressure should be the only thing contributing to
+the stress tensor. \emph{For the sake of later discussion, please note that
+	this is the same situation as in the non-moving viscous fluid.} We remember
+Pascal's law
+\begin{quote}
+	\say{Any two points at the same elevation in a continuous mass of the same
+		static fluid will be at the same pressure}\footnote{%
+		White, F.M. (2016) Fluid mechanics. Eighth edition. New York,
+		NY: McGraw-Hill Education.}
+\end{quote}
+here stated assuming hydrostatic distribution of pressure. If we don't have
+any favoured direction it can be rephrased as
+\begin{quote}
+	\say{The pressure applied to any part of the enclosed liquid will be
+		transmitted equally in all directions through the liquid}\footnote{%
+		Wikipedia (Accessed 01.06.2023), Pascal's law}
+\end{quote}
+We can than represent the force density acting at \(\dd{S}\) as
+\[
+	\vb{f} = -\vb{n}p,
+\]
+where \(p\) represents pressure. We assume that the normal vector \(\vb{n}\) is
+directed outside of a fluid parcel that we are considering. The minus in front
+of the expression, is there due to the fact that the surface exerts the pressure
+inwards. If we note that \(\vb{f} = \vb{n}\dotproduct\bm{\tau}\) we can now say
+\[
+	\vb{f} = \vb{n}\dotproduct\bm{\tau} = -\vb{n}p = \vb{n}\dotproduct \qty( -p\vb{I} )
+	\rightarrow \bm{\tau} = -p \vb{I}
+\]
+or in the index notation \(\tau_{ij} = -p \delta_{ij}\).
+
+
+\subsection{Including strain-rate}
+Let's generalise. As we mentioned before, we are looking for
+relation of the form \(\bm{\tau} = g(\dot{\vb{D}})\). We would like to do the
+power expansion of \(g\)\footnote{Power series around 0 looks like that:
+	\(k(x) = k(0) + ax + bx^2 + \dots\)}. We will have a constant part (independent
+of the function argument), linear, quadratic and so on. In our case, the
+constant part can be conveniently expressed as
+\(g(\dot{\vb{D}})_{\dot{\vb{D}} = \vb{0}}\). This situation is exactly like the
+one before, we have no deformation, so the fluid is probably not moving. So
+we can write:
+\[
+	\bm{\tau} = -p\vb{I} + \text{linear term w.r.t. } \dot{\vb{D}}
+	+ \text{quadratic term w.r.t. } \dot{\vb{D}} + \dots
+\]
+We have the constant term and now we need to determine the other ones.
+
+\subsection{Eigenvalue problem for a tensor}
+For every tensor, it can \say{act} on a vector to produce another vector, as
+in \(M_{\alpha\beta}a_\beta = b_\alpha\) or \(\vb{M}\vb{a} = \vb{b}\). If we
+have selected a special vector \(\vb{a}\), the resultant vector \(\vb{b}\)
+might be collinear with \(\vb{a}\). This property is a geometric fact,
+independent of the chosen coordinate system. So if we set this special
+vector as \(\vb{q}\) and following is true
+\[
+	\vb{M}\vb{q} = \lambda\vb{q} \quad \text{or} \quad
+	\qty(\vb{M} - \lambda\vb{I})\vb{q} = \vb{0},
+\]
+than both \(\lambda\), called an \emph{eigenvalue}, and \(\vb{q}\), the
+\emph{eigenvector} do not depend on the coordinate system.
+For \(\vb{q}\) not to be a trivial \(\vb{0}\), following determinant has to
+vanish
+\[
+	\det(\vb{M} - \lambda\vb{I}) = 0.
+\]
+If we actually spell the determinant out we will get the third order
+equation for \(\lambda\):
+\begin{equation}\label{eq::characterstic_equation}
+	-\lambda^3 + I_1 \qty(\vb{M})\lambda^2 - I_2\qty(\vb{M})\lambda
+	+ I_3\qty(\vb{M}) = 0.
+\end{equation}
+It is called \emph{characteristic equation} of a tensor (or a matrix). The
+scalars \(I_1\), \(I_2\) and \(I_3\) depend on \(\vb{M}\). We established
+that eigenvectors do not depend on the coordinate system, they \say{zero}
+\autoref{eq::characterstic_equation}, so the coefficients of the equation,
+that is \(I_1\), \(I_2\) and \(I_3\), also have to be independent from the
+chosen system. They are called \emph{invariants} and are given by the
+following relations\footnote{Shamelessly stolen from Wikipedia (accessed
+	01.06.2023), Invariants of tensors}:
+\begin{align*}
+	I_1 & = \mathrm{tr}(\mathbf{M}) = M_{11}+M_{22}+M_{33} = \lambda_1+\lambda_2+\lambda_3                       \\
+	I_2 & = \frac{1}{2} \left( (\mathrm{tr}(\mathbf{M}))^2-\mathrm{tr} \left( \mathbf{M}^2 \right) \right)       \\
+	    & = M_{11}M_{22}+M_{22}M_{33}+M_{11}M_{33}-M_{12}M_{21}-M_{23}M_{32}-M_{13}M_{31}                        \\
+	    & = \lambda_1 \lambda_2 + \lambda_1 \lambda_3 + \lambda_2 \lambda_3                                      \\
+	I_3 & = \det (\mathbf{M}) = -M_{13} M_{22} M_{31} + M_{12} M_{23} M_{31} + M_{13} M_{21} M_{32}              \\
+	    & - M_{11} M_{23} M_{32} - M_{12} M_{21} M_{33} +   M_{11} M_{22} M_{33} = \lambda_1 \lambda_2 \lambda_3
+\end{align*}
+Naturally, remembering those formulas is not useful, but it is good to
+remember that they exist. We will now introduce a theorem that will do
+a lot of work for us.
+\begin{theorem}[Cayley–Hamilton theorem]
+	Every square matrix over a commutative ring (such as the real or
+	complex numbers or the integers) satisfies its own characteristic equation.
+\end{theorem}
+\noindent
+In practice, this means that the following holds
+\begin{equation*}
+	-\vb{M}^3 + I_1 \qty(\vb{M})\vb{M}^2 - I_2\qty(\vb{M})\vb{M}
+	+ I_3\qty(\vb{M})\vb{I} = 0.
+\end{equation*}
+We essentially substituted \(\vb{M}\) into \autoref{eq::characterstic_equation}.
+What can now rearrange and obtain closed expression for \(\vb{M}^3\)
+\begin{equation}\label{eq::third_power}
+	\vb{M}^3  = - I_1 \qty(\vb{M})\vb{M}^2 + I_2\qty(\vb{M})\vb{M}
+	- I_3\qty(\vb{M})\vb{I}
+\end{equation}
+and \(\vb{M}^4\) and so on.
+
+\begin{fullwidth}
+\bibliography{refs}
+\bibliographystyle{plainnat}
+\end{fullwidth}
+
+
+\end{document}
