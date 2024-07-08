@@ -1,0 +1,47 @@
+
+\newcommand{\wikilink}[2][Wikipedia]{%
+  \href{https://en.wikipedia.org/wiki/#2}{#1}%
+}
+\newcommand{\wikicite}[1]{%
+  \textsuperscript{\wikilink[W]{#1}}
+}
+
+\renewcommand{\vec}[1]{\bm{#1}}
+
+% definition necessary for the tensor command
+% -------------------------------------------
+\DeclareMathAlphabet{\mathsfbi}{OT1}{\sfdefault}{bx}{sl}
+\DeclareMathVersion{sfletters}
+\SetSymbolFont{letters}{sfletters}{OML}{ntxsfmi}{b}{it}
+
+\makeatletter
+\newcommand{\mathbfsbilow}[1]{%
+  \text{\mathversion{sfletters}$\m@th#1$}%
+}
+
+\DeclareRobustCommand{\tnsr}[1]{%
+  \begingroup
+  \ifcat\noexpand #1\relax
+    % assume Greek letter
+    \edef\greek@test{\detokenize{#1}}%
+    \edef\greek@test{\expandafter\@cdr\greek@test\@nil}%
+    \edef\greek@test{\expandafter\@car\greek@test\@nil}%
+    \edef\x{\the\lccode\expandafter`\greek@test}%
+    \edef\y{\number\expandafter`\greek@test}%
+    \ifnum\x=\y\relax
+      % the command name starts with a lowercase letter
+      \mathbfsbilow{#1}%
+    \else
+      \mathsfbi{#1}%
+    \fi
+  \else
+    \mathsfbi{#1}%
+  \fi
+  \endgroup
+}
+\makeatother
+% -------------------------------------------
+
+\newcommand{\name}[1]{%
+  \textbf{#1}%
+}

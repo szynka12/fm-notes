@@ -1,0 +1,111 @@
+\documentclass[justified, nobib]{tufte-handout}
+
+\title{Notes: hyperbolic conservation laws \& method of characteristics}
+
+\author[Wojciech Sadowski]{Wojciech Sadowski}
+
+%\date{28 March 2010} % without \date command, current date is supplied
+
+% \geometry{showframe} % display margins for debugging page layout
+
+\input{../src/setup.tex}
+\input{../src/commands.tex}
+\input{../src/env.tex}
+\input{../src/symbols.tex}
+
+\newcommand{\Q}[1]{\subsection{Q:~{#1}}}
+
+
+\begin{document}
+
+\maketitle% this prints the handout title, author, and date
+
+\tableofcontents
+% \begin{abstract}
+% \noindent
+%   \lipsum[1]{}
+% \end{abstract}
+\section{One-dimensional advection equation}
+Given a one-dimensional advection equation 
+\begin{equation}
+  \pdv{u}{t} + \pdv{au}{x} = 0, \quad a = \const{}
+  \label{eq:linear-pde}
+\end{equation}
+
+\Q{Define a type of this PDE}
+General form of \nth{2} order PDE is given as 
+\[
+  A\pdv[order=2]{u}{x} + \pdv{u}{x,y}
+  + C\pdv[order=2]{u}{y} 
+  + D\pdv{u}{x} + E\pdv{u}{y} + Fu + G = 0.
+\]
+The equation is
+\begin{description}
+  \item[\ul{hyperbolic}] if \(B^2 - AC > 0\)
+  \item[\ul{parabolic}] if \(B^2 - AC = 0\)
+  \item[\ul{elliptic}] if \(B^2 - AC < 0\)
+\end{description}
+This is one of the methods of determining that by the way, but not \emph{the
+only one.}
+
+In our case, the equation is a \nth{1} order PDE, so we have to increase its order
+by differentiating~\eqref{eq:linear-pde} with respect to time and space:
+\[
+  \pdv[order=2]{u}{t} + \pdv{au}{x,t} = 0,
+\]
+\[
+  \pdv{u}{x,t} + \pdv[order=2]{au}{x} = 0.
+\]
+We can isolate the term \(\pdv{u}/{x,t}\) from the second equation and substitute 
+it into the first, to get the following \nth{2} order equation
+\[
+  \pdv[order=2]{u}{t} - \pdv[order=2]{au}{x} = 0,
+\]
+which is hyperbolic (\(B = 0\), \(A=1\) and \(C=-a\)).\footnote{
+  There is another way of doing that, described in the \say{review} slides. Try
+  it out. Send me the scans if you want to share it with others as a part of
+  this note.}
+
+\Q{How is this form of the equation called?}
+This is the conservation law, describing the evolution of a variable \(u\). It is
+written in a conservative (strong) form. We can rewrite it introducing a flux 
+function \(f=f(u)\), so that 
+\[
+  \pdv{u}{t} + \pdv{f(u)}{x} = 0, \quad f(u) = au
+\]
+
+\Q{Quasi-linear form}
+We are trying to achieve an equation of the following form
+\[
+  \pdv{u}{t} + \mathrm{something}\times\pdv{u}{x} = 0,
+\]
+where \say{something} is \emph{evaluated} independently of \(u\) (in practice,
+in numerical methods, it is evaluated according to the best approximation of
+\(u\) available in a given moment). Then PDE will be linear. 
+
+Linearization of the flux function involves computing a derivative
+\[
+  \pdv{f\ab(u(x))}{x} = \pdv{f(u)}{u}\pdv{u}{x},
+\]
+so at the end we have
+\[
+  \pdv{u}{t} + \pdv{f(u)}{u}\pdv{u}{x} = 0.
+\]
+Assuming that \(f(u) = au\), then \(\pdv{f}{u} = a\) and the equation becomes
+\[
+  \pdv{u}{t} + a\pdv{u}{x} = 0.
+\]
+This is of course a trivial example as \(a=\const\), so the computation of the 
+derivative is simply not necessary.
+
+
+
+\section{Method of characteristics}
+
+
+% \begin{fullwidth}
+% \bibliography{refs}
+% \end{fullwidth}
+
+
+\end{document}
