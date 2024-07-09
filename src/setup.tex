@@ -33,9 +33,15 @@
 \definecolor{p13}{HTML}{ff4133}
 
 
-
 % drawing inside tex
 \usepackage{tikz} 
+\usetikzlibrary{decorations.markings}
+\usetikzlibrary{calc}
+
+\usepackage{pgfplots}
+\pgfplotsset{compat=newest}
+\usepgfplotslibrary{fillbetween}
+\usepackage{xcolor}
 
 % math things
 \usepackage{
@@ -55,6 +61,10 @@
   booktabs, % book-quality tables
   multicol  % multiple column layout facilities
 } 
+
+
+% writing references
+\usepackage{cleveref}  % must be loded after amsmath
 
 % quoting text and friends
 \usepackage{fancyvrb}         % extended verbatim environments
