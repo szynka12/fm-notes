@@ -1,0 +1,122 @@
+\documentclass[justified, nobib]{tufte-handout}
+
+\title{Different forms of the energy equation}
+
+\author[Wojciech Sadowski]{Wojciech Sadowski}
+
+%\date{28 March 2010} % without \date command, current date is supplied
+
+% \geometry{showframe} % display margins for debugging page layout
+
+\input{../src/setup.tex}
+\input{../src/tikz.tex}
+\input{../src/commands.tex}
+\input{../src/env.tex}
+\input{../src/symbols.tex}
+
+\newcommand{\Q}[1]{\subsection{Q:~{#1}}}
+
+
+\begin{document}
+
+\maketitle% this prints the handout title, author, and date
+
+\tableofcontents
+
+\section{Conservation of mass and momentum}
+Mass conservation law can be expressed as\footnote{%
+  Meaning of the symbols
+  \begin{description}
+    \item[\(\rho\)] density
+    \item[\(\bm{u}\)] velocity vector
+    \item[\(u_i\)] \(i\)-th component of \(\bm{u}\)
+    \item[\(\bm{x}\)] spatial coordinate
+    \item[\(t\)] time
+  \end{description}
+}
+\begin{equation}
+  \pdv{\rho}{t} + \pdv{\rho u_i}{x_i} = 0.
+  \label{eq:mass-conserv}
+\end{equation}
+The first term denotes the change of density in time in an infinitesimal volume
+element and the second describes the change of density due to the flux of mass
+(\(\rho\bm{u}\)) through the boundaries of the volume element. 
+
+Momentum equation can be expressed as\footnote{%
+  Meaning of the symbols
+  \begin{description}
+    \item[\(p\)] pressure
+    \item[\(\bm{\sigma}\)] viscous stress tensor
+    \item[\(\bm{f}\)] body force (e.g., gravity)
+  \end{description}
+}
+\begin{equation}
+  \pdv{\rho u_i}{t} + \pdv{\rho u_i u_j}{x_j} = -\pdv{p}{x_i} + \pdv{\sigma_{ij}}{x_j} + \rho f_i.
+  \label{eq:momentum-conserv}
+\end{equation}
+
+\section{Kinetic energy equation}
+Kinetic energy \(K\) is defined as\footnote{%
+  The operation of multiplication of two vectors (variables with one index)
+  with the same index repeated is a dot product, i.e., \(u_i u_i \equiv \bm{u}\bm{\cdot}\bm{u}\).
+}
+\[
+  K = \frac{1}{2}u_i u_i.
+\]
+If we take any derivative of \(K\), here written as \(\pdv{K}/{s}\), with \(s = x_i\) or \(t\), 
+we can notice something interesting:
+\[
+  \pdv{K(u_i(s, \ldots))}{s} = \pdv{K}{u_i}\pdv{u_i}{s} = \pdv{}{u_i}\ab(\frac{1}{2}u_i^2)\pdv{u_i}{s} = u_i \pdv{u_i}{s}.
+\]
+We just computed the derivative using the chain rule,\footnote{
+  \(\odv{f(g(x))}{x} = \odv{f}{g}\odv{g}{x}\)
+}
+and we will use the same method to derive the equation for \(K\). If we
+multiply \cref{eq:momentum-conserv} with \(u_i\) 
+\[
+  u_i\pdv{\rho u_i}{t} + u_i\pdv{\rho u_i u_j}{x_j} = -u_i\pdv{p}{x_i} + u_i\pdv{\sigma_{ij}}{x_j} + \rho u_i f_i,
+\]
+we will lead to the same situation as above, i.e., a derivative of \(u_i\)
+times \(u_i\) itself. This can be simplified now, by working backwards:
+\begin{equation}
+  \begin{split}
+    u_i\pdv{\rho u_i}{t} + u_i\pdv{\rho u_i u_j}{x_j} &= 
+    u_i u_i\pdv{\rho}{t} + \rho u_i \pdv{u_i}{t} 
+    + \rho u_j u_i \pdv{u_i}{x_j} + u_i u_i \pdv{\rho u_j}{x_j} \\
+    &= u_i u_i \underbrace{\ab( \pdv{\rho}{t} + \pdv{\rho u_j}{x_j})}_{=0} + 
+    \rho u_i \pdv{u_i}{t} + \rho u_j u_i \pdv{u_i}{x_j}
+  \end{split}
+  \label{eq:k1}
+\end{equation}
+In the last two terms we are using the chain rule as before
+\[
+  \rho u_i \pdv{u_i}{t} + \rho u_j u_i \pdv{u_i}{x_j} 
+  = \rho \pdv{}{t}\ab(\frac{1}{2}u_i u_i) 
+  + \rho u_j \pdv{}{x_j}\ab(\frac{1}{2}u_i u_i)
+  = \rho \pdv{K}{t} + \rho u_j \pdv{K}{x_j}
+\]
+Finally we use a standard trick of changing between the primitive and conservative 
+form, i.e., we rewrite each term as
+\[
+  \rho \pdv{K}{t} = \pdv{\rho K}{t} - \pdv{\rho}{t} K,
+\]
+\[
+  \rho u_j \pdv{K}{x_j} = \pdv{\rho u_j K}{x_j} - \pdv{\rho u_j} K,
+\]
+and substitute into \cref{eq:k1} using \cref{eq:mass-conserv}to simplify:
+\[
+ \rho u_i \pdv{u_i}{t} + \rho u_j u_i \pdv{u_i}{x_j} = 
+  \pdv{\rho K}{t} + \pdv{\rho u_j K}{x_j} - \underbrace{\ab(\pdv{\rho}{t} + \pdv{\rho u_j}{x_j})}_{=0} K
+  = \pdv{\rho K}{t} + \pdv{\rho u_j K}{x_j}
+\]
+Leading to the conservation equation for kinetic energy:
+\[
+  \pdv{\rho K}{t} + \pdv{\rho u_j K}{x_j} = -u_i\pdv{p}{x_i} + u_i\pdv{\sigma_{ij}}{x_j} + \rho u_i f_i,
+\]
+
+% \begin{fullwidth}
+% \bibliography{refs}
+% \end{fullwidth}
+
+
+\end{document}
