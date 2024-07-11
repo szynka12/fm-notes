@@ -1,4 +1,4 @@
-\documentclass[justified, nobib]{tufte-handout}
+\documentclass[justified, nobib,a4paper]{tufte-handout}
 
 \title{Different forms of the energy equation}
 
@@ -109,9 +109,10 @@ and substitute into \cref{eq:k1} using \cref{eq:mass-conserv}to simplify:
   \pdv{\rho K}{t} + \pdv{\rho u_j K}{x_j} - \underbrace{\ab(\pdv{\rho}{t} + \pdv{\rho u_j}{x_j})}_{=0} K
   = \pdv{\rho K}{t} + \pdv{\rho u_j K}{x_j}
 \]
-Leading to the conservation equation for kinetic energy:
+Leading to the conservation equation for kinetic energy
 \[
-  \pdv{\rho K}{t} + \pdv{\rho u_j K}{x_j} = -u_i\pdv{p}{x_i} + u_i\pdv{\sigma_{ij}}{x_j} + \rho u_i f_i,
+  \pdv{\rho K}{t} + \pdv{\rho u_j K}{x_j} 
+  = -u_i\pdv{p}{x_i} + u_i\pdv{\sigma_{ij}}{x_j} + \rho u_i f_i.
 \]
 
 % \begin{fullwidth}

@@ -1,4 +1,4 @@
-\documentclass[justified, nobib]{tufte-handout}
+\documentclass[justified, nobib, a4page]{tufte-handout}
 
 \title{Notes: hyperbolic conservation laws \& method of characteristics}
 
@@ -521,7 +521,7 @@ tensor product\footnote{%
   }
   of velocities under the divergence term. Consider 
 \[
-  \pdv{\rho u_i} + \pdv{\rho u_i u_j}{x_j} = -\pdv{p}{x_i}.
+  \pdv{\rho u_i}{t} + \pdv{\rho u_i u_j}{x_j} = -\pdv{p}{x_i}.
 \]
 Here the flux function is given as \(f(u_i) = \rho u_i u_j\).
 The simplest model that would allow us to study such non-linear behaviour
@@ -675,7 +675,7 @@ vanishes at infinite (\(\Phi(-\infty, t) = 0\), \(\Phi(\infty, t) = 0\),
 \(\Phi(x, \infty) = 0\)). 
 
 The weak formulation of \cref{eq:burgers} is derived by multiplying the equation by 
-\(Phi\)
+\(\Phi\)
 \[
   \Phi\pdv{u}{t} + \Phi\pdv{f}{x} = 0,
 \]
@@ -685,12 +685,14 @@ and integrating in time and space
   + \int\limits_{-\infty}^{\infty} \int\limits_{0}^{\infty} \Phi\pdv{f}{x}  \d t \d x= 0.
 \]
 Now we can use integration by parts\footnote{%
-  A quick reminder:
+  A quick reminder, for functions \(u(x)\) and \(v(x)\), the definite integral on the 
+  interval \([a,b]\) can be reformulated as 
   \[
-    \int\limits_a^b \odv{u(x)}{x} v(x) \d x = 
+    \int\limits_a^b \odv{u}{x} v \d x = 
     uv|_a^b
-    - \int\limits_a^b u(x)\odv{v(x)}{x}  \d x ,
+    - \int\limits_a^b u\odv{v}{x}  \d x ,
   \]
+  where
   \[
     uv|_a^b = u(b)v(b) - u(a)v(a).
   \]
@@ -709,8 +711,8 @@ In case of the second term we can reverse the order of integration and do the sa
   \begin{split}
      \int\limits_{0}^{\infty} \int\limits_{-\infty}^{\infty} \Phi\pdv{f}{x}  \d x \d t
     = &-\int\limits_{0}^{\infty} \int\limits_{-\infty}^{\infty} \pdv{\Phi}{x}f \d x \d t \\
-    &+ \int\limits_{0}^{\infty} \underbrace{f(\infty, t)\Phi(\infty, 0)}_{=0} \d t
-    - \int\limits_{0}^{\infty} \underbrace{f(-\infty, t)\Phi(-\infty, 0)}_{=0} \d t.
+    &+ \int\limits_{0}^{\infty} \underbrace{f(\infty, t)\Phi(\infty, t)}_{=0} \d t
+    - \int\limits_{0}^{\infty} \underbrace{f(-\infty, t)\Phi(-\infty, t)}_{=0} \d t.
   \end{split}
 \end{equation*}
 If we resemble the full expression we get the weak formulation of \cref{eq:burgers}
