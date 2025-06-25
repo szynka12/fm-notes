@@ -1,6 +1,7 @@
+%! TeX program = lualatex
 \documentclass[justified, nobib]{tufte-handout}
 
-\title{Notes: Euler equations \& linear hyperbolic systems}
+\title{Euler equations \& linear hyperbolic systems}
 
 \author[Wojciech Sadowski]{Wojciech Sadowski}
 
@@ -23,407 +24,453 @@
 \tableofcontents
 
 \section{Euler equations}
-The Euler equations in conservative differential form 
-(strong form):
+The Euler equations in conservative differential form
+(strong form):\sidenote{%
+	We make several assumptions. These equations describe the compressible flow of
+	an inviscid fluid without heat transfer. The symbols are:
+	\begin{description}
+		\item[$x_i, t$] spatial and temporal coordinates
+		\item[$\rho$] fluid's density,
+		\item[$u_i$] fluid's velocity vector
+		\item[$p$] pressure field
+		\item[$f_i$] local acceleration (e.g., gravity field)
+		\item[$E$] total energy (sum of internal energy $e$ and kinetic energy $u_i u_i/2$)
+		\item[$Q$] local energy source.
+	\end{description}
+}
 \begin{equation}
-  \begin{split}
-    &\pdv{\rho}{t} + \pdv{\rho u_i}{x_i} = 0,\\
-    &\pdv{\rho u_i}{t} + \pdv{\rho u_i u_j}{x_j} 
-      = -\pdv{p}{x_i} + f_i,\\
-    &\pdv{\rho E}{t} + \pdv{\rho E u_j}{x_j} 
-      =  -\pdv{u_i p}{x_i} + \rho f_i u_i + Q
-  \end{split}
-  \label{eq:euler}
+	\begin{split}
+		\text{conservation of mass:}\quad & \pdv{\rho}{t} + \pdv{\rho u_i}{x_i} = 0,    \\
+		\text{cons.\ of momentum:}\quad   & \pdv{\rho u_i}{t} + \pdv{\rho u_i u_j}{x_j}
+		= -\pdv{p}{x_i} + \rho f_i,                                                     \\
+		\text{cons.\ of energy:}\quad     & \pdv{\rho E}{t} + \pdv{\rho E u_j}{x_j}
+		=  -\pdv{u_i p}{x_i} + \rho f_i u_i + Q
+	\end{split}
+	\label{eq:euler}
 \end{equation}
 
-In the integral (weak) form (the integrals taken in some
-volume \(V\) with boundary \(S\)):
-\begin{equation}
-  \begin{split}
-    &\pdv{}{t}\int\limits_V \rho \d V 
-      + \oint\limits_S\rho u_i n_i \d S = 0,\\
-    &\pdv{}{t}\int\limits_V \rho u_i \d V 
-      + \oint\limits_S \ab( \rho u_i u_j n_j + p n_i) \d S
-      = \int\limits_V f_i \d V,\\
-    &\pdv{}{t}\int\limits_V \rho E \d V 
-      + \oint\limits_S (\rho E + p)  u_j n_j \d S
-      = \int\limits_V \ab( Q + \rho f_i u_i) \d V
-  \end{split}
-  \label{eq:euler-integral}
-\end{equation}
-We have four unknowns \(\rho, \bm{u}, E, p\) (we assume that 
-\(f = Q = 0\) or are known) but we have only three equations. For an ideal
-gas, we can write:
+We can get the integral (weak) form of the equations by integrating in some
+volume \(V\) with boundary \(S\). Taken continuity equation (mass conservation law)
+as an example, we first integrate
 \[
-  p = \rho e \ab(\gamma - 1) 
-  \rightarrow 
-  e = \frac{p}{\rho \ab(\gamma - 1)},
+	\int\limits_V \pdv{\rho}{t} \d V
+	+ \int\limits_V \pdv{\rho u_i}{x_i} \d V = 0,
 \]
-where \(\gamma = c_p / c_v = 1.4\). Total energy \(E\) is equal to 
+than we assume that the volume does not change in time, so we can get the time
+derivative out
+\[
+	\pdv{}{t}\int\limits_V \rho \d V
+	+ \int\limits_V \pdv{\rho u_i}{x_i} \d V = 0,
+\]
+and finally we use divergence theorem\sidenote{%
+	Assuming that V is a closed volume with piecewise smooth boundary $S$ and $n_i$ is
+	the outward pointing normal vector of $S$, we can write
+	\[
+		\int\limits_V \pdv{k_i}{x_i} \d V = \oint\limits_S k_i n_i \d S
+	\]
+	for continuously differentiable vector $k_i$.
+} of the second term to get:
+\[
+	\pdv{}{t}\int\limits_V \rho \d V
+	+ \oint\limits_S\rho u_i n_i \d S = 0.
+\]
+
+The weak form looks as follows (we moved some terms around):
+\begin{equation}
+	\begin{split}
+		 & \pdv{}{t}\int\limits_V \rho \d V
+		+ \oint\limits_S\rho u_i n_i \d S = 0,  \\
+		 & \pdv{}{t}\int\limits_V \rho u_i \d V
+		+ \oint\limits_S \ab( \rho u_i u_j n_j + p n_i) \d S
+		= \int\limits_V f_i \d V,               \\
+		 & \pdv{}{t}\int\limits_V \rho E \d V
+		+ \oint\limits_S (\rho E + p)  u_j n_j \d S
+		= \int\limits_V \ab( Q + \rho f_i u_i) \d V
+	\end{split}
+	\label{eq:euler-integral}
+\end{equation}
+We have four unknowns \(\rho, \bm{u}, E, p\) (we assume that \(f = Q = 0\) or
+are known) but we have only three equations, but turns out we can eliminate pressure under
+certain assumptions.
+For an ideal calorically perfect
+gas, we can write:\sidenote{%
+We start from the ideal gas equation
+\[
+	\frac{p}{\rho} = \mathcal{R}T
+\]
+combined with relationships $\mathcal{R}=c_p - c_v$, $\gamma={c_p}/{c_v}$ and the formula for
+internal energy $e=c_vT$.
+}
+\begin{equation}
+	p = \rho e \ab(\gamma - 1)
+	\rightarrow
+	e = \frac{p}{\rho \ab(\gamma - 1)},
+\end{equation}
+where \(\gamma = c_p / c_v = 1.4\). Total energy \(E\) is equal to
 \(E = e + \bm{u}\cdot\bm{u}/2\).
 
-Introducing the vector of conservative variables 
+Introducing the vector of conservative variables
 \(\mathcal{U}\)
-\[
-  \mathcal{U} = \left[
-    \begin{array}{c}
-      \rho\\
-      \rho \bm{u}\\
-      \rho E
-    \end{array} \right],
-\]
+\begin{equation}
+	\mathcal{U} = \left[
+		\begin{array}{c}
+			\rho        \\
+			\rho \bm{u} \\
+			\rho E
+		\end{array} \right],
+\end{equation}
 the advective flux \(\mathcal{F}_\mathrm{adv}\)
 \[
-  \mathcal{F}_\mathrm{adv} = \left[
-    \begin{array}{c}
-      \rho \bm{u}\\
-      \rho \bm{u}\otimes\bm{u} + p \bm{I}\\
-      \ab(\rho E  + p) \bm{u}
-    \end{array} \right],
+	\mathcal{F}_\mathrm{adv} = \left[
+		\begin{array}{c}
+			\rho \bm{u}                         \\
+			\rho \bm{u}\otimes\bm{u} + p \bm{I} \\
+			\ab(\rho E  + p) \bm{u}
+		\end{array} \right],
 \]
 and sources \(\mathcal{Q}\)
 \[
-  \mathcal{Q} = \left[
-    \begin{array}{c}
-      0\\
-      \bm{f}\\
-      Q + \rho \bm{u}\cdot\bm{f}
-    \end{array} \right],
+	\mathcal{Q} = \left[
+		\begin{array}{c}
+			0      \\
+			\bm{f} \\
+			Q + \rho \bm{u}\cdot\bm{f}
+		\end{array} \right],
 \]
 we can write both in symbolic form
 \[
-  \pdv{\mathcal{U}}{t} + \div\mathcal{F}_\mathrm{adv} = \mathcal{Q}, 
+	\pdv{\mathcal{U}}{t} + \div\mathcal{F}_\mathrm{adv} = \mathcal{Q},
 \]
 or
 \[
-  \pdv{}{t} \int\limits_V \mathcal{U} \d V 
-  + \oint\limits_S \mathcal{F}_\mathrm{adv}\cdot \bm{n} \d S
-  = \int\limits_V \mathcal{Q} \d V.
+	\pdv{}{t} \int\limits_V \mathcal{U} \d V
+	+ \oint\limits_S \mathcal{F}_\mathrm{adv}\cdot \bm{n} \d S
+	= \int\limits_V \mathcal{Q} \d V.
 \]
 
 \section{Euler equations in 1D}
 \begin{equation}
-  \begin{split}
-    &\pdv{\rho}{t} + \pdv{\rho u}{x} = 0,\\
-    &\pdv{\rho u}{t} + \pdv{\rho u^2}{x} 
-      = -\pdv{p}{x} ,\\
-    &\pdv{\rho E}{t} + \pdv{\rho E u}{x} 
-      =  -\pdv{up}{x} 
-  \end{split}
-  \label{eq:euler1d}
+	\begin{split}
+		 & \pdv{\rho}{t} + \pdv{\rho u}{x} = 0, \\
+		 & \pdv{\rho u}{t} + \pdv{\rho u^2}{x}
+		= -\pdv{p}{x} ,                         \\
+		 & \pdv{\rho E}{t} + \pdv{\rho E u}{x}
+		=  -\pdv{up}{x}
+	\end{split}
+	\label{eq:euler1d}
 \end{equation}
 
-Introducing the vector of conservative variables 
+Introducing the vector of conservative variables
 \(\mathcal{U}\)
 \[
-  \mathcal{U} = \left[
-    \begin{array}{c}
-      \rho\\
-      \rho u\\
-      \rho E
-    \end{array} \right],
+	\mathcal{U} = \left[
+		\begin{array}{c}
+			\rho   \\
+			\rho u \\
+			\rho E
+		\end{array} \right],
 \]
 the advective flux \(\mathcal{F}_\mathrm{adv}\)
 \[
-  \mathcal{F}_\mathrm{adv}(\mathcal{U}) = \left[
-    \begin{array}{c}
-      \rho u\\
-      \rho u^2 + p \\
-      \ab(\rho E  + p) u
-    \end{array} \right],
+	\mathcal{F}_\mathrm{adv}(\mathcal{U}) = \left[
+		\begin{array}{c}
+			\rho u       \\
+			\rho u^2 + p \\
+			\ab(\rho E  + p) u
+		\end{array} \right],
 \]
 we can write both in symbolic form
 \[
-  \pdv{\mathcal{U}}{t} + \pdv{\mathcal{F}_\mathrm{adv}(\mathcal{U})}{x} 
-  = 0. 
+	\pdv{\mathcal{U}}{t} + \pdv{\mathcal{F}_\mathrm{adv}(\mathcal{U})}{x}
+	= 0.
 \]
 
 \section{Quasi-linear form}
 \def\F{\mathcal{F}_\mathrm{adv}}
 Using the chain rule, we can linearize each of the equations. The mass conservation
 \[
-  \begin{split}
-    \pdv{\rho}{t} + \pdv{\F^\rho(\mathcal{U})}{x} 
-    &= \pdv{\rho}{t} 
-    + \pdv{\F^\rho(\mathcal{U})}{\mathcal{U}}\pdv{\mathcal{U}}{x}\\
-    &= \pdv{\rho}{t} + \pdv{\F^\rho}{\rho}\pdv{\rho}{x} 
-    + \pdv{\F^\rho}{\rho u}\pdv{\rho u}{x} 
-    + \pdv{\F^\rho}{\rho E}\pdv{\rho E}{x} \\
-    &= \pdv{\rho}{t} + (1)\pdv{\rho u}{x} = 0
-  \end{split}
+	\begin{split}
+		\pdv{\rho}{t} + \pdv{\F^\rho(\mathcal{U})}{x}
+		 & = \pdv{\rho}{t}
+		+ \pdv{\F^\rho(\mathcal{U})}{\mathcal{U}}\pdv{\mathcal{U}}{x} \\
+		 & = \pdv{\rho}{t} + \pdv{\F^\rho}{\rho}\pdv{\rho}{x}
+		+ \pdv{\F^\rho}{\rho u}\pdv{\rho u}{x}
+		+ \pdv{\F^\rho}{\rho E}\pdv{\rho E}{x}                        \\
+		 & = \pdv{\rho}{t} + (1)\pdv{\rho u}{x} = 0
+	\end{split}
 \]
 
 \def\U{\mathcal{U}}
-For momentum 
+For momentum
 \[
-  \begin{split}
-    \F^{\rho u} 
-    &= \rho u^2 + p = \rho u^2 + (\gamma-1)\rho e 
-    =  \rho u^2 + (\gamma-1)\rho (E - u^2/2) \\
-    &= \frac{\U_2^2}{\U_1} + (\gamma - 1)\ab(\U_3 - \frac{\U_2^2}{2\U_1} )
-    = (3-\gamma)\frac{\U_2^2}{2\U_1}  +(\gamma - 1)\U_3\\
-    &= (3-\gamma)\frac{{(\rho u)}^2}{\rho} + (\gamma - 1)\rho E   
-  \end{split}
+	\begin{split}
+		\F^{\rho u}
+		 & = \rho u^2 + p = \rho u^2 + (\gamma-1)\rho e
+		=  \rho u^2 + (\gamma-1)\rho (E - u^2/2)                                 \\
+		 & = \frac{\U_2^2}{\U_1} + (\gamma - 1)\ab(\U_3 - \frac{\U_2^2}{2\U_1} )
+		= (3-\gamma)\frac{\U_2^2}{2\U_1}  +(\gamma - 1)\U_3                      \\
+		 & = (3-\gamma)\frac{{(\rho u)}^2}{\rho} + (\gamma - 1)\rho E
+	\end{split}
 \]
 so
 \[
-  \begin{split}
-    \pdv{\rho u }{t} &+ \pdv{\F^{\rho u}(\U)}{x} 
-    = \pdv{\rho u}{t} + \pdv{\F^{\rho u}(\U)}{\U}\pdv{\U}{x} \\
-    &=  \pdv{\rho u}{t} 
-    + \pdv{\F^{\rho u}}{\rho }\pdv{\rho }{x} 
-    + \pdv{\F^{\rho u}}{\rho u}\pdv{\rho u}{x} 
-    + \pdv{\F^{\rho u}}{\rho E}\pdv{\rho E}{x} \\
-    &=  \pdv{\rho u}{t} 
-    + \frac{ \gamma - 3 }{2} \frac{{(\rho u)}^2}{\rho^2} \pdv{\rho }{x} 
-    + \ab[\frac{2\rho u }{\rho} - (\gamma -1)\frac{\rho u}{\rho} ]\pdv{\rho u}{x} + (\gamma - 1)\pdv{\rho E}{x}\\
-    & = \pdv{\rho u}{t} + \frac{ \gamma - 3 }{2}u^2\pdv{\rho }{x} 
-    + (3 - \gamma)u\pdv{\rho u}{x}
-    + (\gamma - 1 )\pdv{\rho E}{x}
-    = 0
-  \end{split}
+	\begin{split}
+		\pdv{\rho u }{t} & + \pdv{\F^{\rho u}(\U)}{x}
+		= \pdv{\rho u}{t} + \pdv{\F^{\rho u}(\U)}{\U}\pdv{\U}{x}                                                    \\
+		                 & =  \pdv{\rho u}{t}
+		+ \pdv{\F^{\rho u}}{\rho }\pdv{\rho }{x}
+		+ \pdv{\F^{\rho u}}{\rho u}\pdv{\rho u}{x}
+		+ \pdv{\F^{\rho u}}{\rho E}\pdv{\rho E}{x}                                                                  \\
+		                 & =  \pdv{\rho u}{t}
+		+ \frac{ \gamma - 3 }{2} \frac{{(\rho u)}^2}{\rho^2} \pdv{\rho }{x}
+		+ \ab[\frac{2\rho u }{\rho} - (\gamma -1)\frac{\rho u}{\rho} ]\pdv{\rho u}{x} + (\gamma - 1)\pdv{\rho E}{x} \\
+		                 & = \pdv{\rho u}{t} + \frac{ \gamma - 3 }{2}u^2\pdv{\rho }{x}
+		+ (3 - \gamma)u\pdv{\rho u}{x}
+		+ (\gamma - 1 )\pdv{\rho E}{x}
+		= 0
+	\end{split}
 \]
 For energy
 \[
-  \begin{split}
-    \F^{\rho E} 
-    &= \rho u E + p u = \rho u E + (\gamma-1)\rho e u
-    = \rho u E + (\gamma-1)\rho(E - u^2/2)u \\
-    &= \rho u E + (\gamma - 1 )\rho u E -(\gamma -1)\rho u^3/2
-    = \gamma\rho u E -\frac{\gamma-1}{2} \rho u^3\\
-    &= \gamma\frac{(\rho u)(\rho E)}{\rho} -\frac{\gamma-1}{2}\frac{{(\rho u)}^3}{\rho^2}
-  \end{split}
+	\begin{split}
+		\F^{\rho E}
+		 & = \rho u E + p u = \rho u E + (\gamma-1)\rho e u
+		= \rho u E + (\gamma-1)\rho(E - u^2/2)u                                                 \\
+		 & = \rho u E + (\gamma - 1 )\rho u E -(\gamma -1)\rho u^3/2
+		= \gamma\rho u E -\frac{\gamma-1}{2} \rho u^3                                           \\
+		 & = \gamma\frac{(\rho u)(\rho E)}{\rho} -\frac{\gamma-1}{2}\frac{{(\rho u)}^3}{\rho^2}
+	\end{split}
 \]
 so
 \[
-  \begin{split}
-    \pdv{\rho E }{t} &+ \pdv{\F^{\rho E}(\U)}{x} 
-    = \pdv{\rho E}{t} + \pdv{\F^{\rho E}(\U)}{\U}\pdv{\U}{x} \\
-    &=  \pdv{\rho E}{t} 
-    + \pdv{\F^{\rho E}}{\rho }\pdv{\rho }{x} 
-    + \pdv{\F^{\rho E}}{\rho u}\pdv{\rho u}{x} 
-    + \pdv{\F^{\rho E}}{\rho E}\pdv{\rho E}{x} \\
-    &=  \pdv{\rho E}{t} 
-    + \ab[-\gamma\frac{(\rho u)(\rho E)}{\rho^2} + \ab(\gamma-1)\frac{{(\rho u)}^3}{\rho^3} ]\pdv{\rho}{x} \\
-    &+ \ab[\gamma\frac{\rho E}{\rho} - \frac{3}{2}\ab(\gamma-1)\frac{{(\rho u)}^2}{\rho^2}]\pdv{\rho u}{x} 
-    + \gamma\frac{\rho u}{\rho} \pdv{\rho E}{\rho} \\
-    &=  \pdv{\rho E}{t} + \ab[(\gamma -1)u^3-\gamma u E ]\pdv{\rho}{x}
-    + \ab[\gamma E - \frac{3}{2}(\gamma -1)u^2]\pdv{\rho u}{x}
-    + \gamma u\pdv{\rho E}{\rho}
-  \end{split}
+	\begin{split}
+		\pdv{\rho E }{t} & + \pdv{\F^{\rho E}(\U)}{x}
+		= \pdv{\rho E}{t} + \pdv{\F^{\rho E}(\U)}{\U}\pdv{\U}{x}                                                                 \\
+		                 & =  \pdv{\rho E}{t}
+		+ \pdv{\F^{\rho E}}{\rho }\pdv{\rho }{x}
+		+ \pdv{\F^{\rho E}}{\rho u}\pdv{\rho u}{x}
+		+ \pdv{\F^{\rho E}}{\rho E}\pdv{\rho E}{x}                                                                               \\
+		                 & =  \pdv{\rho E}{t}
+		+ \ab[-\gamma\frac{(\rho u)(\rho E)}{\rho^2} + \ab(\gamma-1)\frac{{(\rho u)}^3}{\rho^3} ]\pdv{\rho}{x}                   \\
+		                 & + \ab[\gamma\frac{\rho E}{\rho} - \frac{3}{2}\ab(\gamma-1)\frac{{(\rho u)}^2}{\rho^2}]\pdv{\rho u}{x}
+		+ \gamma\frac{\rho u}{\rho} \pdv{\rho E}{\rho}                                                                           \\
+		                 & =  \pdv{\rho E}{t} + \ab[(\gamma -1)u^3-\gamma u E ]\pdv{\rho}{x}
+		+ \ab[\gamma E - \frac{3}{2}(\gamma -1)u^2]\pdv{\rho u}{x}
+		+ \gamma u\pdv{\rho E}{\rho}
+	\end{split}
 \]
 \def\A{\mathcal{A}}
-All of this hard work, let us express our system of equations as 
+All of this hard work, let us express our system of equations as
 \[
-  \pdv{\U}{t} + \A(\U)\pdv{\U}{x} = \bm{0}
+	\pdv{\U}{t} + \A(\U)\pdv{\U}{x} = \bm{0}
 \]
 or
 \[
-  \pdv{}{t}\left[
-    \begin{array}{c}
-      \rho\\
-      \rho \bm{u}\\
-      \rho E
-    \end{array} \right] +
-    \ab[\begin{array}{ccc}
-      \pdv{\F^\rho}/{\rho}
-      & \pdv{\F^\rho}/{\rho u}
-      & \pdv{\F^\rho}/{\rho E} \\
-      \pdv{\F^{\rho u}}/{\rho }
-      & \pdv{\F^{\rho u}}/{\rho u}
-      & \pdv{\F^{\rho u}}/{\rho E} \\
-      \pdv{\F^{\rho E}}/{\rho } 
-      & \pdv{\F^{\rho E}}/{\rho u}
-      & \pdv{\F^{\rho E}}/{\rho E}
-    \end{array}]
-    \left[
-   \begin{array}{c}
-      \pdv{\rho}/{x}\\
-      \pdv{\rho u}/{x}\\
-      \pdv{\rho E}/{x}
-    \end{array} \right]
-  = \bm{0}.
+	\pdv{}{t}\left[
+		\begin{array}{c}
+			\rho        \\
+			\rho \bm{u} \\
+			\rho E
+		\end{array} \right] +
+	\ab[\begin{array}{ccc}
+			\pdv{\F^\rho}/{\rho}
+			 & \pdv{\F^\rho}/{\rho u}
+			 & \pdv{\F^\rho}/{\rho E}     \\
+			\pdv{\F^{\rho u}}/{\rho }
+			 & \pdv{\F^{\rho u}}/{\rho u}
+			 & \pdv{\F^{\rho u}}/{\rho E} \\
+			\pdv{\F^{\rho E}}/{\rho }
+			 & \pdv{\F^{\rho E}}/{\rho u}
+			 & \pdv{\F^{\rho E}}/{\rho E}
+		\end{array}]
+	\left[
+		\begin{array}{c}
+			\pdv{\rho}/{x}   \\
+			\pdv{\rho u}/{x} \\
+			\pdv{\rho E}/{x}
+		\end{array} \right]
+	= \bm{0}.
 \]
 \def\A{\mathcal{A}}
 
 The matrix \(\A\)
 \[
-  \A(\U) =  \left[
-    \begin{array}{ccc}
-      0 & 1 & 0 \\
-      \dfrac{\gamma -3}{2}u^2 & (3 - \gamma)u & \gamma - 1\\
-      -\gamma u E + (\gamma -1)u^3 & \gamma E - \dfrac{3(\gamma -1)}{2}u^2 & \gamma u
-    \end{array} \right]
+	\A(\U) =  \left[
+		\begin{array}{ccc}
+			0                            & 1                                     & 0          \\
+			\dfrac{\gamma -3}{2}u^2      & (3 - \gamma)u                         & \gamma - 1 \\
+			-\gamma u E + (\gamma -1)u^3 & \gamma E - \dfrac{3(\gamma -1)}{2}u^2 & \gamma u
+		\end{array} \right]
 \]
 is the Jacobian of the system of equations.
-This is the non-conservative form of the Euler equations. 
+This is the non-conservative form of the Euler equations.
 Based on \(\A\) it can be proven that Euler equations are in fact
-hyperbolic (\(\A\) has real eigenvalues and independent eigenvectors). 
+hyperbolic (\(\A\) has real eigenvalues and independent eigenvectors).
 
 
 \section{Primitive variables}
 \def\P{\mathcal{P}}
-In the similar manner we can get the primitive form, i.e., expressed 
+In the similar manner we can get the primitive form, i.e., expressed
 using the primitive variables \(\P\):
 \[
-  \P = \left[
-    \begin{array}{c}
-      \rho\\
-      u \\
-      p
-    \end{array}
-  \right].
+	\P = \left[
+		\begin{array}{c}
+			\rho \\
+			u    \\
+			p
+		\end{array}
+		\right].
 \]
 \def\K{\mathcal{K}}
-We can simply make a change of variables using the chain rule, 
+We can simply make a change of variables using the chain rule,
 \[
-  \pdv{\U}{t} = \pdv{\U}{\P}\pdv{\P}{t} = 
-  \ab[
-    \begin{array}{ccc}
-      \pdv{\rho  }/{\rho} & \pdv{\rho  }/{u} & \pdv{\rho  }/{p}\\
-      \pdv{\rho u}/{\rho} & \pdv{\rho u}/{u} & \pdv{\rho u}/{p}\\
-      \pdv{\rho E}/{\rho} & \pdv{\rho E}/{u} & \pdv{\rho E}/{p}
-    \end{array}
-  ] \pdv{\P}{t} = \K\pdv{\P}{t}
-\] 
+	\pdv{\U}{t} = \pdv{\U}{\P}\pdv{\P}{t} =
+	\ab[
+		\begin{array}{ccc}
+			\pdv{\rho  }/{\rho} & \pdv{\rho  }/{u} & \pdv{\rho  }/{p} \\
+			\pdv{\rho u}/{\rho} & \pdv{\rho u}/{u} & \pdv{\rho u}/{p} \\
+			\pdv{\rho E}/{\rho} & \pdv{\rho E}/{u} & \pdv{\rho E}/{p}
+		\end{array}
+	] \pdv{\P}{t} = \K\pdv{\P}{t}
+\]
 We only need to clarify the transformation of
 energy into pressure
 \[
-  \rho E = \rho e + \rho u^2/2 = \frac{p}{\gamma -1 } + \rho u^2/2,
+	\rho E = \rho e + \rho u^2/2 = \frac{p}{\gamma -1 } + \rho u^2/2,
 \]
 From that we have
 \[
-  \pdv{\rho E}{\rho} = \pdv{}{\rho}\ab(\frac{p}{\gamma -1 } + \rho u^2/2)
-  = \frac{u^2}{2},
+	\pdv{\rho E}{\rho} = \pdv{}{\rho}\ab(\frac{p}{\gamma -1 } + \rho u^2/2)
+	= \frac{u^2}{2},
 \]
 \[
-  \pdv{\rho E}{u} = \pdv{}{u}\ab(\frac{p}{\gamma -1 } + \rho u^2/2)
-  = \rho u,
+	\pdv{\rho E}{u} = \pdv{}{u}\ab(\frac{p}{\gamma -1 } + \rho u^2/2)
+	= \rho u,
 \]
 and finally
 \[
-  \pdv{\rho E}{p} = \pdv{}{p}\ab(\frac{p}{\gamma -1 } + \rho u^2/2)
-  = \frac{1}{\gamma -1}.
+	\pdv{\rho E}{p} = \pdv{}{p}\ab(\frac{p}{\gamma -1 } + \rho u^2/2)
+	= \frac{1}{\gamma -1}.
 \]
 
 The Jacobian of variable change \(\pdv{\U}/{\P}\) can be easily computed
 \[
-  \pdv{\U}{\P} = 
-  \ab[
-    \begin{array}{ccc}
-      1 & 0 & 0\\
-      u & \rho & 0\\
-      u^2/2 & \rho u & 1/(\gamma -1)
-    \end{array}
-  ]
+	\pdv{\U}{\P} =
+	\ab[
+		\begin{array}{ccc}
+			1     & 0      & 0             \\
+			u     & \rho   & 0             \\
+			u^2/2 & \rho u & 1/(\gamma -1)
+		\end{array}
+	]
 \]
 and inserted into our original equation:
 \[
-  \K\pdv{\P}{t} + \A(\U)\K\pdv{\P}{x} = \bm{0}.
+	\K\pdv{\P}{t} + \A(\U)\K\pdv{\P}{x} = \bm{0}.
 \]
 Is \(\K\) invertible? It is a lower triangular matrix so
 \[
-  \det \K = \frac{\rho}{\gamma - 1} > 0
+	\det \K = \frac{\rho}{\gamma - 1} > 0
 \]
-and 
+and
 \[
-  \K^{-1} = \ab[
-    \begin{array}{ccc}
-      1 & 0 & 0\\
-      -u/\rho & 1/\rho & 0\\
-      (\gamma -1)u^2/2 & u(1 - \gamma)& (\gamma -1)
-    \end{array}
-  ] 
+	\K^{-1} = \ab[
+		\begin{array}{ccc}
+			1                & 0             & 0           \\
+			-u/\rho          & 1/\rho        & 0           \\
+			(\gamma -1)u^2/2 & u(1 - \gamma) & (\gamma -1)
+		\end{array}
+	]
 \]
-We know that \(\K^{-1}\K = \bm{I}\), so we can multiply the equations 
+We know that \(\K^{-1}\K = \bm{I}\), so we can multiply the equations
 from left side by \(\K^{-1}\) and get the following form:
 \[
-  \pdv{\P}{t} + \K^{-1}\A(\U)\K\pdv{\P}{x} = \bm{0}.
+	\pdv{\P}{t} + \K^{-1}\A(\U)\K\pdv{\P}{x} = \bm{0}.
 \]
 The matrix \(\A(\P) = \K^{-1}\A(\U)\K\) is given as\footnote{Check that and send it to me!}
 \[
-  \A(\P) = \ab[
-    \begin{array}{ccc}
-      u & \rho & 0\\
-      0 & u & 1/\rho\\
-      0 & \rho a^2 & u
-    \end{array}
-  ],
+	\A(\P) = \ab[
+		\begin{array}{ccc}
+			u & \rho     & 0      \\
+			0 & u        & 1/\rho \\
+			0 & \rho a^2 & u
+		\end{array}
+	],
 \]
-where \(a = \sqrt{\gamma p /\rho}\) is the speed of sound. The 
-matrix form can be expanded to 
-\[
-  \begin{split} 
-    \pdv{\rho}{t} &+ u\pdv{\rho}{x} + \rho\pdv{u}{x} = 0\\
-    \pdv{u}{t}    &+ u\pdv{u}{x} + \frac{1}{\rho}\pdv{p}{x} = 0 \\
-    \pdv{p}{t}    &+ \rho a^2 \pdv{u}{x} + u\pdv{p}{x} = 0.
-  \end{split}
-\]
+where \(a = \sqrt{\gamma p /\rho}\) is the speed of sound. The
+matrix form can be expanded to
+\begin{equation}
+	\begin{split}
+		\pdv{\rho}{t} & + u\pdv{\rho}{x} + \rho\pdv{u}{x} = 0        \\
+		\pdv{u}{t}    & + u\pdv{u}{x} + \frac{1}{\rho}\pdv{p}{x} = 0 \\
+		\pdv{p}{t}    & + \rho a^2 \pdv{u}{x} + u\pdv{p}{x} = 0.
+	\end{split}
+	\label{eq:primitive}
+\end{equation}
 \subsection{Entropy equation}
-If we consider entropy \(S = p/\rho^\gamma\) we can compute 
+If we consider a variable \(y = p/\rho^\gamma\), so that entropy is given as $S=c_v\ln y + \text{const.}$, we can compute the expression
 \[
-  \pdv{S}{t} = \frac{1}{\rho^\gamma}\pdv{p}{t} + \pdv{\rho^{-\gamma}}{t}p 
-  = \frac{1}{\rho^\gamma}\pdv{p}{t} - \gamma p \rho^{-\gamma - 1}\pdv{\rho}{t}
-  = \frac{1}{\rho^\gamma}\ab(\pdv{p}{t} - \frac{\gamma p}{\rho}\pdv{\rho}{t})
+	\pdv{y}{t} = \frac{1}{\rho^\gamma}\pdv{p}{t} + \pdv{\rho^{-\gamma}}{t}p
+	= \frac{1}{\rho^\gamma}\pdv{p}{t} - \gamma p \rho^{-\gamma - 1}\pdv{\rho}{t}
+	= \frac{1}{\rho^\gamma}\ab(\pdv{p}{t} - \frac{\gamma p}{\rho}\pdv{\rho}{t})
 \]
-which can be further simplified using the speed of sound and \nth{1} and
-\nth{3} equation in the primitive form and substitute the substantial
-derivatives:
+which can be further simplified using the speed of sound, \nth{1} and
+\nth{3} equation in the primitive form given by \cref{eq:primitive}, resulting in
 \[
-  \begin{split}
-    \frac{1}{\rho^\gamma}\ab(\pdv{p}{t} - a^2\pdv{\rho}{t})
-    & = \frac{1}{\rho^\gamma}\ab[-\rho a^2 \pdv{u}{x} - u\pdv{p}{x} + a^2\ab(u\pdv{\rho}{x} + \rho\pdv{u}{x}) ]\\
-    & = \frac{-u}{\rho^\gamma}\ab( \pdv{p}{x} - a^2\pdv{\rho}{x} ) = -u\pdv{S}{x}
-  \end{split}
+	\begin{split}
+		\frac{1}{\rho^\gamma}\ab(\pdv{p}{t} - a^2\pdv{\rho}{t})
+		 & = \frac{1}{\rho^\gamma}\ab[-\rho a^2 \pdv{u}{x} - u\pdv{p}{x} + a^2\ab(u\pdv{\rho}{x} + \rho\pdv{u}{x}) ] \\
+		 & = \frac{-u}{\rho^\gamma}\ab( \pdv{p}{x} - a^2\pdv{\rho}{x} ) = -u\pdv{y}{x}
+	\end{split}
 \]
-Equating one to the other gives us the equation for entropy that is valid in 
-smooth regions of the flow 
+Equating one to the other gives us the equation for $y$ that is valid in
+smooth regions of the flow
 \[
-  \pdv{S}{t} + u\pdv{S}{x} = \mdv{S}{t}=0,
+	\pdv{y}{t} + u\pdv{y}{x} = \mdv{y}{t}=0,
 \]
 which implies that entropy remains constant along the flow paths.
 
 \section{General linear system}
-A general linear system is given as 
+A general linear system is given as
 \[
-  \pdv{\bm{u}}{t} + \bm{A}\pdv{\bm{u}}{x} = \bm{0}, \quad \bm{u} = {\ab[u_1 \dots u_n]}^T, 
+	\pdv{\bm{u}}{t} + \bm{A}\pdv{\bm{u}}{x} = \bm{0}, \quad \bm{u} = {\ab[u_1 \dots u_n]}^T,
 \]
 where the flux Jacobian \(\bm{A}\) is constant, has \(n\) distinct real
 eigenvalues \(\lambda_i\) and \(n\) linearly independent eigenvectors
 \(\bm{k}_i\).
 
 \subsection{Diagonalization}
-\newcommand{\vb}[1]{\bm{#1}} 
+\newcommand{\vb}[1]{\bm{#1}}
 If we solve the eigenvalue problem \(\bm{A}\bm{k}
 -\lambda\bm{k} =\bm{0}\), we can create a matrix \(\vb{K}=\ab[\vb{k}_1 \dots
-\vb{k}_n]\). Then the coefficient matrix \(\vb{A}\) can be expressed as
+	\vb{k}_n]\). Then the coefficient matrix \(\vb{A}\) can be expressed as
 \[
-  \bm{A} = \bm{K}\bm{\Lambda}\bm{K}^{-1},\quad 
-  \bm{\Lambda} = \ab[
-    \begin{array}{ccc} 
-      \lambda_1 &        & \\
-               & \ddots & \\
-               &        &  \lambda_n
-    \end{array}].
+	\bm{A} = \bm{K}\bm{\Lambda}\bm{K}^{-1},\quad
+	\bm{\Lambda} = \ab[
+		\begin{array}{ccc}
+			\lambda_1 &        &           \\
+			          & \ddots &           \\
+			          &        & \lambda_n
+		\end{array}].
 \]
 \subsection{Characteristic variables}
-We can also introduce new set of variables \(\vb{w} = \bm{K}\vb{u}\), and 
+We can also introduce new set of variables \(\vb{w} = \bm{K}\vb{u}\), and
 substitute it into our equation leading to
 \[
-  \pdv{\bm{w}}{t} + \bm{\Lambda}\pdv{\bm{w}}{x} = \bm{0}.
+	\pdv{\bm{w}}{t} + \bm{\Lambda}\pdv{\bm{w}}{x} = \bm{0}.
 \]
 This is a decoupled system!\footnote{\(\bm\Lambda\) is diagonal.}
-We also see, that \(\bm{w}_i\) is the coefficient of \(i\)-th eigenvector 
+We also see, that \(\bm{w}_i\) is the coefficient of \(i\)-th eigenvector
 when \(\bm{u}\) is represented in the basis of eigenvectors
 \[
-  \bm{u}(x,t) = \bm{K}\bm{w} = \ab[\vb{k}_1 \dots \vb{k}_n]{\ab[w_1 \dots w_n]}^T=
-  \sum\limits_i^n w_i(x,t)\vb{k}_i
+	\bm{u}(x,t) = \bm{K}\bm{w} = \ab[\vb{k}_1 \dots \vb{k}_n]{\ab[w_1 \dots w_n]}^T=
+	\sum\limits_i^n w_i(x,t)\vb{k}_i
 \]
 If we know the initial condition to \(\vb{u} = \vb{u}^{(0)}\), we can transform it
-as well, and then solve each of the equations separately using the 
+as well, and then solve each of the equations separately using the
 method of characteristics:
 \[
-  \bm{u}(x,t) = \sum\limits_i^n w^{(0)}_i(x-\lambda_i t)\vb{k}_i.
+	\bm{u}(x,t) = \sum\limits_i^n w^{(0)}_i(x-\lambda_i t)\vb{k}_i.
 \]
 
 

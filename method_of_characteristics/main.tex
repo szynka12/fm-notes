@@ -1,0 +1,828 @@
+%! TeX program = lualatex
+\documentclass[justified, nobib, a4page]{tufte-handout}
+
+\title{Method of characteristics}
+
+\author[Wojciech Sadowski]{Wojciech Sadowski}
+
+%\date{28 March 2010} % without \date command, current date is supplied
+
+% \geometry{showframe} % display margins for debugging page layout
+
+\input{../src/setup.tex}
+\input{../src/tikz.tex}
+\input{../src/commands.tex}
+\input{../src/env.tex}
+\input{../src/symbols.tex}
+
+\newcommand{\Q}[1]{\subsection{Q:~{#1}}}
+
+
+\begin{document}
+
+\maketitle% this prints the handout title, author, and date
+
+\tableofcontents
+% \begin{abstract}
+% \noindent
+%   \lipsum[1]{}
+% \end{abstract}
+\section{One-dimensional advection equation}
+Given a one-dimensional advection equation
+\begin{equation}
+	\pdv{u}{t} + \pdv{au}{x} = 0, \quad a = \const{}
+	\label{eq:linear-pde}
+\end{equation}
+
+\Q{Define a type of this PDE}
+
+In our case, the equation is a \nth{1} order PDE\sidenote[][-2cm]{%
+	Partial Differential Equation}, so we have to increase its
+order\sidenote[][-1.5cm]{%
+	General form of \nth{2} order PDE is given as
+	\begin{equation*}
+		\begin{split}
+			A\pdv[order=2]{u}{x} + \pdv{u}{x,y} & + C\pdv[order=2]{u}{y} + D\pdv{u}{x} \\
+			                                    & + E\pdv{u}{y} + Fu + G = 0.
+		\end{split}
+	\end{equation*}
+	The equation is
+	\begin{description}
+		\item[\ul{hyperbolic}] if \(B^2 - AC > 0\)
+		\item[\ul{parabolic}] if \(B^2 - AC = 0\)
+		\item[\ul{elliptic}] if \(B^2 - AC < 0\)
+	\end{description}
+	This is one of the methods of determining that by the way, but not \emph{the
+		only one.}
+}
+by differentiating~\cref{eq:linear-pde} with respect to time and space:
+\[
+	\pdv[order=2]{u}{t} + \pdv{au}{x,t} = 0,
+\]
+\[
+	\pdv{u}{x,t} + \pdv[order=2]{au}{x} = 0.
+\]
+We can isolate the term \(\pdv{u}/{x,t}\) from the second equation and substitute
+it into the first, to get the following \nth{2} order equation
+\[
+	\pdv[order=2]{u}{t} - \pdv[order=2]{au}{x} = 0,
+\]
+which is hyperbolic (\(B = 0\), \(A=1\) and \(C=-a\)).\footnote{
+	There is another way of doing that, described in the \say{review} slides. Try
+	it out. Send me the scans if you want to share it with others as a part of
+	this note.}
+
+\Q{How is this form of the equation called?}
+This is the conservation law, describing the evolution of a variable \(u\). It is
+written in a conservative (strong) form. We can rewrite it introducing a flux
+function \(f=f(u)\), so that
+\[
+	\pdv{u}{t} + \pdv{f(u)}{x} = 0, \quad f(u) = au
+\]
+
+\Q{Quasi-linear form}
+We are trying to achieve an equation of the following form
+\begin{equation}
+	\pdv{u}{t} + \mathrm{something}\times\pdv{u}{x} = 0,
+	\label{eq:quasi-lin}
+\end{equation}
+where \say{something} is \emph{evaluated} independently of \(u\) (in practice,
+in numerical methods, it is evaluated according to the best approximation of
+\(u\) available in a given moment). Then PDE will be linear.
+
+Linearization of the flux function involves computing a derivative
+\[
+	\pdv{f\ab(u(x))}{x} = \pdv{f(u)}{u}\pdv{u}{x},
+\]
+so at the end we have
+\[
+	\pdv{u}{t} + \pdv{f(u)}{u}\pdv{u}{x} = 0.
+\]
+Assuming that \(f(u) = au\), then \(\pdv{f}{u} = a\) and the equation becomes
+\[
+	\pdv{u}{t} + a\pdv{u}{x} = 0.
+\]
+This is of course a trivial example as \(a=\const\), so the computation of the
+derivative is simply not necessary.
+
+
+
+\section{Method of characteristics}
+
+\newthought{We will introduce} the basic concept behind the method of
+characteristics, useful for solving linear hyperbolic PDEs. Given
+\cref{eq:linear-pde}, with an initial solution \(u(x, 0) = u_0(x)\), we will
+seek to transform \cref{eq:linear-pde} into an ODE\footnote{Ordinary
+	Differential Equation} along an appropriate curve called \emph{characteristic}.
+The resulting ODE will, in general, have the form
+\begin{equation}
+	\odv{u\ab(x_\star(s), t_\star(s))}{s}
+	= F\ab(u\ab(x_\star(x), t_\star(s)), x_\star(s), t_\star(s)),
+	\label{eq:char-gen}
+\end{equation}
+where the set of coordinates \(\gamma(s) = \ab\{x_\star(s), t_\star(s)\}\),
+parametrized with one variable \(s\) defines a chosen characteristic (see
+\cref{fig:ch1}).
+
+\begin{marginfigure}
+	\begin{center}
+		\begin{tikzpicture}
+			% \pgfplotsset{every axis plot post/.append style={draw=black, fill=gray!25}}
+			\begin{axis}[
+					smooth,
+					% stack plots=y,
+					% area style,
+					% enlarge x limits=true,
+					xlabel=\(x\),
+					ylabel={\(t\), {\color{gray}\(u\)}},
+					width=6.3cm,
+					yticklabel=\empty,
+					xticklabel=\empty,
+					xtick=\empty,
+					ytick=\empty,
+					xmin=0,
+					xmax=4,
+					ymin=0,
+					ymax=4,
+					axis x line=middle,
+					axis y line=middle,
+					y axis line style={-stealth, thick},
+					x axis line style={-stealth, thick}
+				]
+				\addplot[mark=none, black, thick, arrow inside={}{0.25,0.5,0.75}]
+				coordinates {
+						(1, 0) (1.7,1.5) (2.5,2.5) (2,4)}
+				node [pos=0.7,left] {\(\gamma(s)\)} ;
+				\addplot[smooth,gray] { exp(-(x-2)^2) } node [pos=0.7, above] {\(u_0(x)\)};
+				\addplot coordinates { (1, 0) (1, 0.36787944117)};
+			\end{axis}
+		\end{tikzpicture}
+	\end{center}
+	\caption{The characteristic curve \(\gamma\) plotted in the \(x\)-\(t\) coordinate
+		system along with the initial condition \(u_0(x)\). The arrows denote integration
+		direction along the ODE defined on \(\gamma\).}\label{fig:ch1}
+\end{marginfigure}
+
+We can integrate the ODE from the initial condition, for each \(x\) and, therefore,
+solve our PDE.\@ \emph{This is the solution by transformation.}
+
+\newthought{The characteristic curve} is defined as a set of two coordinates. We can
+expand the derivative on the left side of \cref{eq:char-gen}:
+\[
+	\odv{u}{s} = \odv{x_\star}{s}\pdv{u}{x} + \odv{t_\star}{s}\pdv{u}{t}
+\]
+If we assume that \(t_\star(s) = s\), we can simplify further. We essentially
+say that the spatial coordinate of the characteristic curve can be given as
+function of \(t\), i.e., \(x_\star(s) = x_\star(t)\) (we are \emph{eliminating}
+the free parameter \(s\) from the set of two equations defining \(\gamma\)).
+
+Then the derivative \(\odv{t_\star}/{s} = 1\) and \(\d s = \d t\), therefore,
+\begin{equation}
+	\odv{u}{s} = \odv{x_\star}{t}\pdv{u}{x} + \pdv{u}{t}.
+	\label{eq:duds}
+\end{equation}
+Finally, have to say, that the characteristic curve is now defined as
+\(x=x_\star(t)\).
+
+\newthought{What will happen} if the curve satisfies an ODE
+\(\odv{x_\star}/{t} = a\)? We can rewrite \cref{eq:duds} as
+\[
+	\odv{u}{t} =  \pdv{u}{t} + a\pdv{u}{x},
+\]
+which we know as quasi-linear form of \cref{eq:linear-pde}, as written in
+\cref{eq:quasi-lin}. We also know that the \cref{eq:quasi-lin} is equal to 0,
+therefore the derivative \(\odv{u}/{t} = 0\) along the whole characteristic
+curve given as \(\gamma : \ab\{x_\star(t), \odv{x_\star}/{t} = a \}\). This is
+very important: \emph{the value of \(u\) does not change along the
+	characteristics.} If we integrate \(\odv{u}/{t} = 0\) we get:
+\[
+	\odv{u(x_\star(t), t)}{t} = 0 \rightarrow u(x_\star(t), t) = \const
+\]
+
+\newthought{What curve} actually fulfils given conditions?
+The equation \(\odv{x_\star}/{t} = a\) is fulfilled by a line.
+\[
+	\odv{x_\star}{t} = a\rightarrow x_\star = at + \const
+\]
+If we set \(x_\star(0) = x_0\), then the solution becomes
+\(x_\star = x_0 + at\). The value of \(a\) is the slope of this line, or in
+terms of \emph{physical interpretation}, it is the speed of propagation of
+\(u\).
+
+\newthought{How can we describe the solution then?}
+The expression \(x_\star = x_0 + at\), describes the family of curves, so we
+can write that \(x_\star = x_\star(x_0, t)\) (the characteristic is determined
+by the point it crosses through). Owing to that
+\[
+	u(x, t) = u(x_\star(x_0, t), t),
+\]
+and we can equal that to our initial condition for \(u\)
+\[
+	u(x_\star(x_0, t), t) = u(x_\star(x_0, 0), 0) = u_0(x_0).
+\]
+The initial point for each characteristic \(x_\star\) is given as \(x_0 =
+x_\star - at\). Reinserting and dropping the \(\star\) in the
+subscript\footnote{%
+	Variable \(x_\star\) still denotes a coordinate. In practice, we don't have
+	to use the \(\star\) to denote the coordinates belonging to \(\gamma\), but
+	the notation is cleaner this way.}
+we get
+\[
+	u(x, t) = u_0(x - at).
+\]
+\subsection{Drawing characteristics example}
+
+As already mentioned, \(x_\star\) defines a family of characteristic lines. For
+the \cref{eq:quasi-lin} with \(a=\const\), all lines are parallel to each
+other. Therefore, knowing the initial condition, we can sketch the solution to
+the equation for each time step, as shown in \cref{fig:ch2}.
+
+\begin{marginfigure}
+	\begin{center}
+		\begin{tikzpicture}
+			% \pgfplotsset{every axis plot post/.append style={draw=black, fill=gray!25}}
+			\begin{axis}[
+					smooth,
+					% area style,
+					xlabel=\(x\),
+					ylabel={\(t\), {\color{gray}\(u\)}},
+					width=6.3cm,
+					yticklabel=\empty,
+					xticklabel=\empty,
+					xtick=\empty,
+					ytick=\empty,
+					xmin=0,
+					xmax=4,
+					ymin=0,
+					ymax=4,
+					axis x line=middle,
+					axis y line=middle,
+					y axis line style={-stealth, thick},
+					x axis line style={-stealth, thick}
+				]
+				% x = x0 + 1t
+				\addplot[gray, fill=gray!25, shift={(1.25,1.25)}] coordinates
+					{(-7, 0) (0.5,0.2) (1.5,1.5) (2.5,0.2) (10, 0)}
+				node [midway, above, xshift=-0.4cm] {\(u(x,t_5)\)};
+				\addplot[gray, fill=gray!25, shift={(1,1)}] coordinates
+					{(-7, 0) (0.5,0.2) (1.5,1.5) (2.5,0.2) (10, 0)}
+				node [midway, above, xshift=-0.4cm] {\(u(x,t_4)\)};
+				\addplot[gray, fill=gray!25, shift={(0.75,0.75)}] coordinates
+					{(-7, 0) (0.5,0.2) (1.5,1.5) (2.5,0.2) (10, 0)}
+				node [midway, above, xshift=-0.4cm] {\(u(x,t_3)\)};
+				\addplot[gray, fill=gray!25, shift={(0.5,0.5)}] coordinates
+					{(-7, 0) (0.5,0.2) (1.5,1.5) (2.5,0.2) (10, 0)}
+				node [midway, above, xshift=-0.4cm] {\(u(x,t_2)\)};
+				\addplot[gray, fill=gray!25, shift={(0.25,0.25)}] coordinates
+					{(-7, 0) (0.5,0.2) (1.5,1.5) (2.5,0.2) (10, 0)}
+				node [midway, above, xshift=-0.4cm] {\(u(x,t_1)\)};
+				\addplot[gray, fill=gray!25] coordinates
+					{(-7, 0) (0.5,0.2) (1.5,1.5) (2.5,0.2) (10, 0)}
+				node [midway, above, xshift=-0.4cm] {\(u_0(x)\)};
+				\addplot[red, thick] coordinates { (1.5, 1.5) (3.25, 3.25) }
+				node [above] {\(x_\star = x_0 + at\)};
+				\addplot[red, thick] coordinates { (2.5,0.2) (4, 1.7) } ;
+			\end{axis}
+		\end{tikzpicture}
+	\end{center}
+	\caption{The characteristic curves and the solutions at different time steps, for the equation
+	\(\pdv{u}/{t} + a\pdv{u}/{x} = 0\) assuming sketched initial condition.}\label{fig:ch2}
+\end{marginfigure}
+
+\newthought{Key takeaways:}
+\begin{enumerate}
+	\item For positive (negative) value of \(a\) the initial profile \(u_0\)
+	      simply gets shifted to the right (left).
+	\item The shape of the profile remains unchanged.
+	\item The propagation of the profile with a finite speed is essentially
+	      a \emph{wave propagation}.
+\end{enumerate}
+
+\subsection{Riemann problem for linear equation}
+Given \cref{eq:quasi-lin}, \(a=\const\) and an initial condition with
+discontinuity
+\[
+	u_0 = \left\{
+	\begin{aligned}
+		u_l \; & : \; x < \xi     \\
+		u_r \; & : \; x \geq \xi,
+	\end{aligned} \right.
+\]
+what will be the solution? The initial field is sketched in \cref{fig:ch3}. The
+situation of defining the evolution in time of a hyperbolic conservation law
+with discontinuity is called \emph{Riemann problem}.
+
+\begin{marginfigure}
+	\begin{center}
+		\begin{tikzpicture}
+			% \pgfplotsset{every axis plot post/.append style={draw=black, fill=gray!25}}
+			\begin{axis}[
+					smooth,
+					% area style,
+					xlabel=\(x\),
+					ylabel={\(u_0\)},
+					width=6.3cm,
+					height=3cm,
+					xtick={2},
+					xticklabel={\(\xi\)},
+					yticklabel=\empty,
+					ytick=\empty,
+					xmin=0,
+					xmax=4,
+					ymin=0,
+					ymax=3,
+					axis x line=middle,
+					axis y line=middle,
+					y axis line style={-stealth, thick},
+					x axis line style={-stealth, thick}
+				]
+
+				\addplot[black, thick, mark=o] coordinates { (-0.1, 2) (2, 2) }
+				node [above, midway] {\(u_l\)};
+				\addplot[black, thick, mark=*, mark options={
+							fill=black, draw=black,
+						}] coordinates { (2, 1) (4.1, 1) } node [above, midway] {\(u_r\)};
+			\end{axis}
+		\end{tikzpicture}
+	\end{center}
+	\caption{Initial field for the Riemann problem example.}\label{fig:ch3}
+\end{marginfigure}
+
+The solution of the Riemann problem can be easily sketched as in previous example.
+The good characteristic point is the point of discontinuity. We know that the
+solution remains constant on each characteristic line, so effectively we can
+simply split the \(x\)-\(t\) plane into two halves as in \cref{fig:ch4}.
+Analytically, solution can be obtained in the same way as before:
+\[
+	u = u_0(x-at) =
+	\left\{
+	\begin{aligned}
+		u_l \; & : \; x - at < \xi     \\
+		u_r \; & : \; x - at \geq \xi.
+	\end{aligned} \right.
+\]
+
+\begin{marginfigure}
+	\begin{center}
+		\begin{tikzpicture}
+			% \pgfplotsset{every axis plot post/.append style={draw=black, fill=gray!25}}
+			\begin{axis}[
+					smooth,
+					% area style,
+					xlabel=\(x\),
+					ylabel={\(t\)},
+					width=6.3cm,
+					xtick={2},
+					xticklabel={\(\xi\)},
+					yticklabel=\empty,
+					ytick=\empty,
+					xmin=0,
+					xmax=4,
+					ymin=0,
+					ymax=3,
+					axis x line=middle,
+					axis y line=middle,
+					y axis line style={-stealth, thick},
+					x axis line style={-stealth, thick}
+				]
+
+				\fill [fill=green!25] (-0.1, 0) -- (2, 0) -- (3, 3) -- (-0.1, 3);
+				\node  at (1, 2) {\(u_l\)};
+				\fill [fill=blue!25] (4.1, 0) -- (2, 0) -- (3, 3) -- (4.1, 3);
+				\node  at (3, 1) {\(u_r\)};
+				\addplot[red, thick] coordinates { (2, 0) (3, 3) }
+				node [left, midway] {\(x_\star = \xi + at\)};
+
+			\end{axis}
+		\end{tikzpicture}
+	\end{center}
+	\caption{Solution to the Riemann problem example.}\label{fig:ch4}
+\end{marginfigure}
+
+\section{Linear equation with variable coefficient}
+We will consider \cref{eq:quasi-lin} with \(a = x\). The equation is still
+linear (\(u\) only in the \nth{1} power), but the propagation speed varies now.
+The initial solution (sketched in \cref{fig:ch5}) is given as
+\[
+	u_0 = \left\{
+	\begin{aligned}
+		u_l \; & : \; x < \xi_l            \\
+		u_m \; & : \; \xi_r > x \geq \xi_l \\
+		u_r \; & : \; x \geq \xi_r,
+	\end{aligned} \right.
+\]
+
+\begin{marginfigure}
+	\begin{center}
+		\begin{tikzpicture}
+			% \pgfplotsset{every axis plot post/.append style={draw=black, fill=gray!25}}
+			\begin{axis}[
+					smooth,
+					% area style,
+					xlabel=\(x\),
+					ylabel={\(u_0\)},
+					width=6.3cm,
+					height=4cm,
+					xtick={1.5, 2.5},
+					xticklabels={\(\xi_l\), \(\xi_r\)},
+					yticklabel=\empty,
+					ytick=\empty,
+					xmin=0,
+					xmax=4,
+					ymin=0,
+					ymax=4,
+					axis x line=middle,
+					axis y line=middle,
+					y axis line style={-stealth, thick},
+					x axis line style={-stealth, thick}
+				]
+
+				\addplot[black, thick, mark=o] coordinates { (-0.1, 3) (1.5, 3) }
+				node [above, midway] {\(u_l\)};
+
+				\addplot[black, thick, mark=o, mark repeat={2}] coordinates { (1.5, 2) (2, 2) }
+				node [above] {\(u_m\)};
+				\addplot[black, thick, mark=*, mark repeat={2}, mark options={
+							fill=black, draw=black,
+						}] coordinates { (2.5, 2) (2, 2) };
+
+				\addplot[black, thick, mark=*, mark options={
+							fill=black, draw=black,
+						}] coordinates { (2.5, 1) (4.1, 1) } node [above, midway] {\(u_r\)};
+			\end{axis}
+		\end{tikzpicture}
+	\end{center}
+	\caption{Initial field for the \(a=x\) example.}\label{fig:ch5}
+\end{marginfigure}
+
+The only difficulty lies in the more complex ODE, which we can now
+write as
+\[
+	\odv{x_\star}{t} = x, \quad x_\star(0) = x_0.
+\]
+We know\footnote{Check!} that the solution to this ODE is
+\[
+	x_\star = x_0 e^t,
+\]
+so we again can draw the characteristics that go through the points with
+discontinuities and \say{paint} the solution (see \cref{fig:ch6}).
+
+\begin{marginfigure}
+	\begin{center}
+		\begin{tikzpicture}
+			% \pgfplotsset{every axis plot post/.append style={draw=black, fill=gray!25}}
+			\begin{axis}[
+					smooth,
+					% area style,
+					xlabel=\(x\),
+					ylabel={\(t\)},
+					width=6.3cm,
+					xtick={0.5, 1},
+					xticklabels={\(\xi_l\), \(\xi_r\)},
+					yticklabel=\empty,
+					ytick=\empty,
+					xmin=0,
+					xmax=4,
+					ymin=0,
+					ymax=3,
+					axis x line=middle,
+					axis y line=middle,
+					y axis line style={-stealth, thick},
+					x axis line style={-stealth, thick}
+				]
+				\addplot[name path=D] coordinates {(1, -0.1) (4, -0.1)};
+				\addplot[name path=U] coordinates {(0, 4.1) (4, 4.1)};
+
+				\addplot[name path=A, black, thick, domain = 0.5:4,samples=20]  {ln(x/0.5)}
+				node [midway, above, xshift=-0.8cm] {\(x_\star = \xi_l e^t\)} ;
+				\addplot[name path=B, black, thick, domain = 1:4,samples=20]  {ln(x/1)}
+				node [midway, below, xshift=0.8cm] {\(x_\star = \xi_r e^t\)} ;
+				\fill [green!25] (0, 0) -- (0.5, 0) -- (0,4.1);
+				\addplot[blue!25] fill between[of=A and B];
+				\addplot[green!25] fill between[of=A and U];
+				\addplot[red!25] fill between[of=B and D];
+				\node at (2, 2.5) {\(u_l\)};
+				\node at (3, 1.5) {\(u_m\)};
+				\node at (3.75, 1) {\(u_r\)};
+			\end{axis}
+		\end{tikzpicture}
+	\end{center}
+	\caption{Solution to the \(a=x\) example.}\label{fig:ch6}
+\end{marginfigure}
+
+\section{Non-linear hyperbolic conservation laws}
+
+\newthought{The Euler equations} are non-linear, due to the
+tensor product\footnote{%
+	Two different indices multiplied are a tensor product, i.e., if a tensor is
+	formed from the product \(\bm{T} = \bm{u}\otimes\bm{v}\), then this can be
+	written as \(\bm{T} = u_i u_j \bm{e}_i\otimes\bm{e}_j\) and \(\bm{e}_i\)
+	denotes an \(i\)-th versor of the Cartesian coordinate system. From here, we
+	can also deduce that \(T_{ij}= u_i u_j\).
+}
+of velocities under the divergence term. Consider
+\[
+	\pdv{\rho u_i}{t} + \pdv{\rho u_i u_j}{x_j} = -\pdv{p}{x_i}.
+\]
+Here the flux function is given as \(f(u_i) = \rho u_i u_j\).
+The simplest model that would allow us to study such non-linear behaviour
+is the Burgers equation, where \(f(u) = u^2/2\):
+\begin{equation}
+	\pdv{u}{t} + \pdv{u^2/2}{x} = 0,
+	\label{eq:burgers}
+\end{equation}
+or in linearized form
+\begin{equation}
+	\pdv{u}{t} + u\pdv{u}{x} = 0.
+	\label{eq:lin-burgers}
+\end{equation}
+To linearize, we computed the derivative \(\pdv{f}/{u}\) as in the previous
+example.
+
+\subsection{Emergence of discontinuities}
+We know that the solution can be discontinuous if \(u_0\) is not continuous. In
+case of non-linear equations, discontinuous solution can emerge even if the
+initial condition is continuous. We will consider the following example, with
+\(u_0\) given as a tent function centred around \(\xi\), as sketched in
+\cref{fig:burg1}.
+
+\begin{marginfigure}
+	\begin{center}
+		\begin{tikzpicture}
+			% \pgfplotsset{every axis plot post/.append style={draw=black, fill=gray!25}}
+			\begin{axis}[
+					% area style,
+					xlabel=\(x\),
+					ylabel={\(u_0\)},
+					width=6.3cm,
+					height=3cm,
+					xtick={1, 2, 3},
+					xticklabels={\(\xi_l\), \(\xi\), \(\xi_r\)},
+					yticklabel=\empty,
+					ytick=\empty,
+					xmin=0,
+					xmax=4,
+					ymin=0,
+					ymax=3,
+					axis x line=middle,
+					axis y line=middle,
+					y axis line style={-stealth, thick},
+					x axis line style={-stealth, thick}
+				]
+				\addplot[black, thick] coordinates { (0, 0) (1, 0) (2, 2) (3, 0) (4,0) };
+			\end{axis}
+		\end{tikzpicture}
+	\end{center}
+	\caption{Initial field for the Burgers equation example.}\label{fig:burg1}
+\end{marginfigure}
+
+Before we try to draw characteristic curves there are a couple of points to
+consider.
+\begin{enumerate}
+	\item The ODE is given as
+	      \[
+		      \odv{x_\star}{t} = u(x, t).
+	      \]
+	\item We know that \(\odv{u}/{t} = 0\) for the curve so, we can treat the
+	      right-hand side of the above equation as constant.
+	\item This means that for each point \(x_0\), the characteristic curve will
+	      be a straight line \(x_\star = x_0 + u_0(x_0)t\), but the slope of the curves
+	      can change depending on the value of \(u_0\).
+\end{enumerate}
+
+
+\begin{marginfigure}
+	\begin{center}
+		\begin{tikzpicture}
+			% \pgfplotsset{every axis plot post/.append style={draw=black, fill=gray!25}}
+			\begin{axis}[
+					% area style,
+					xlabel=\(x\),
+					ylabel={\(t\), {\color{gray}\(u_0\)}},
+					width=6.3cm,
+					xtick={1, 2, 3},
+					xticklabels={\(\xi_l\), \(\xi\), \(\xi_r\)},
+					yticklabel=\empty,
+					ytick=\empty,
+					xmin=0,
+					xmax=4,
+					ymin=0,
+					ymax=3,
+					axis x line=middle,
+					axis y line=middle,
+					y axis line style={-stealth, thick},
+					x axis line style={-stealth, thick}
+				]
+				\addplot[black, gray] coordinates { (0, 0) (1, 0) (2, 0.5) (3, 0) (4,0) };
+
+				\addplot[red, thick] coordinates { (0.25, 0) (0.25, 2) };
+				\addplot[red, thick] coordinates { (0.5, 0) (0.5, 2) };
+				\addplot[red, thick] coordinates { (0.75, 0) (0.75, 2) };
+				\addplot[red, thick] coordinates { (1, 0) (1, 2) };
+
+				\addplot[red, thick, domain=1:1.5] {(x - 1.25)/0.125};
+				\addplot[red, thick, domain=1:2] {(x - 1.5)/0.25};
+				\addplot[red, thick, domain=1:2.5] {(x - 1.75)/0.375};
+
+				\addplot[red, thick, domain=2:3] {(x - 2)/0.5};
+				\addplot[red, thick, domain=2:3] {(x - 2.25)/0.375};
+				\addplot[red, thick, domain=2:3] {(x - 2.5)/0.25};
+				\addplot[red, thick, domain=2:3] {(x - 2.75)/0.125};
+
+				\addplot[red, thick] coordinates { (3, 0)    (3, 2) };
+				\addplot[red, thick] coordinates { (3.25, 0) (3.25, 2) };
+				\addplot[red, thick] coordinates { (3.5, 0)  (3.5, 2) };
+				\addplot[red, thick] coordinates { (3.75, 0) (3.75, 2) };
+
+				\fill    [green!25] (0, 2) -- (4,2) -- (4, 3) -- (0, 3);
+				\addplot [dashed, thick] coordinates { (0, 2) (4, 2) } node [above, midway] {\(t_d\) line, discontinuity above};
+
+
+				% \addplot[red, thick] {-2.5 + 0.25*x};
+			\end{axis}
+		\end{tikzpicture}
+	\end{center}
+	\caption{Solution to the Burgers equation until a time a discontinuity appears.}\label{fig:burg2}
+\end{marginfigure}
+
+\newthought{The solution} can be obtained by dealing with the
+initial condition in intervals:
+\begin{description}
+	\item[\(x_0 < \xi_l\):] here \(u_0 = 0\) which means that characteristic is
+	      given by \(x_\star = x_0\) (i.e., straight vertical line going through \(x_0\));
+	\item[\(x_0 \geq \xi_r\):] same as above;
+	\item[\(\xi_l \geq x_0 < \xi\):] as the value of \(u_0\) increases in this interval, from
+	      0 to a maximum value, causing the characteristics to flatten progressively and creating the
+	      \say{fan} pattern;
+	\item[\(\xi \geq x_0 < \xi+r\):] as the value of \(u_0\) decreases in this interval, from
+	      maximum value to 0, causing the characteristics to steepen and cross in one point!
+\end{description}
+We can plot it (see \cref{fig:burg2}), and we see that at time \(t=t_d\), sever
+curves cross. This means, that this point has more than one value (as the value
+on the characteristic curve remains constant, and we have conflicting values on
+different curves). This means, that the solution \(t>t_d\) is \emph{discontinuous},
+even though \(u_0 \in C^0\). We can't say anything about the solution for \(t>t_d\)
+using the method of characteristics.
+
+\section{Weak solutions for non-linear hyperbolic PDEs}
+What does it mean for the problem \cref{eq:burgers}, that the solution at a
+certain time is discontinuous? Importantly, this means that \emph{the
+	derivatives do not exist}. A solution has to be defined in a different
+sense, without requiring that \(\pdv{u}/{x}\) and \(\pdv{u}/{t}\) exist.
+
+We can define a test function \(\Phi(x,t)\in
+C^1(\mathbb{R}\times\mathbb{R}^+)\), which is differentiable, and its value
+vanishes at infinite (\(\Phi(-\infty, t) = 0\), \(\Phi(\infty, t) = 0\),
+\(\Phi(x, \infty) = 0\)).
+
+The weak formulation of \cref{eq:burgers} is derived by multiplying the equation by
+\(\Phi\)
+\[
+	\Phi\pdv{u}{t} + \Phi\pdv{f}{x} = 0,
+\]
+and integrating in time and space
+\[
+	\int\limits_{-\infty}^{\infty} \int\limits_{0}^{\infty} \Phi\pdv{u}{t} \d t \d x
+	+ \int\limits_{-\infty}^{\infty} \int\limits_{0}^{\infty} \Phi\pdv{f}{x}  \d t \d x= 0.
+\]
+Now we can use integration by parts\footnote{%
+	A quick reminder, for functions \(u(x)\) and \(v(x)\), the definite integral on the
+	interval \([a,b]\) can be reformulated as
+	\[
+		\int\limits_a^b \odv{u}{x} v \d x =
+		uv|_a^b
+		- \int\limits_a^b u\odv{v}{x}  \d x ,
+	\]
+	where
+	\[
+		uv|_a^b = u(b)v(b) - u(a)v(a).
+	\]
+}
+on the parts of the above integrals. Dealing first with the time derivative term
+\begin{equation*}
+	\begin{split}
+		\int\limits_{-\infty}^{\infty} \int\limits_{0}^{\infty} \Phi\pdv{u}{t} \d t \d x
+		= & -\int\limits_{-\infty}^{\infty} \int\limits_{0}^{\infty} \pdv{\Phi}{t}u \d t \d x   \\
+		  & + \int\limits_{-\infty}^{\infty} \underbrace{u(x, \infty)\Phi(x, \infty)}_{=0} \d x
+		- \int\limits_{-\infty}^{\infty} u(x, 0)\Phi(x, 0) \d x.
+	\end{split}
+\end{equation*}
+In case of the second term we can reverse the order of integration and do the same thing:
+\begin{equation*}
+	\begin{split}
+		\int\limits_{0}^{\infty} \int\limits_{-\infty}^{\infty} \Phi\pdv{f}{x}  \d x \d t
+		= & -\int\limits_{0}^{\infty} \int\limits_{-\infty}^{\infty} \pdv{\Phi}{x}f \d x \d t \\
+		  & + \int\limits_{0}^{\infty} \underbrace{f(\infty, t)\Phi(\infty, t)}_{=0} \d t
+		- \int\limits_{0}^{\infty} \underbrace{f(-\infty, t)\Phi(-\infty, t)}_{=0} \d t.
+	\end{split}
+\end{equation*}
+If we resemble the full expression we get the weak formulation of \cref{eq:burgers}
+\[
+	\int\limits_{-\infty}^{\infty} \int\limits_{0}^{\infty} \pdv{\Phi}{t}u + \pdv{\Phi}{x}f \d t \d x
+	+ \int\limits_{-\infty}^{\infty} u(x, 0)\Phi(x, 0) \d x
+	= 0
+\]
+The above equation is equivalent because \(\Phi\) can be chosen arbitrarily,\footnote{%
+	That's a quite complicated topic, look into the course literature if you are
+	interested.}
+but importantly, there are no derivatives of \(u\) in the weak form. Hence, we can
+use it to try to reason about the solution with discontinuities.
+
+\subsection{Rankine--Hugoniot formula (shock front speed)}
+We return to a previous problem with initial condition given
+as
+\[
+	u_0 = \left\{
+	\begin{aligned}
+		u_l \; & : \; x < \xi     \\
+		u_r \; & : \; x \geq \xi,
+	\end{aligned} \right.
+\]
+and possibly non-linear equation
+\[
+	\pdv{u}{t} + \pdv{f(u)}{x} = 0.
+\]
+The discontinuity is already present in the solution, so we are looking
+for the solution in the weak sense.
+
+\begin{marginfigure}
+	\begin{center}
+		\begin{tikzpicture}
+			% \pgfplotsset{every axis plot post/.append style={draw=black, fill=gray!25}}
+			\begin{axis}[
+					smooth,
+					% area style,
+					xlabel=\(x\),
+					ylabel=\empty,
+					width=6.3cm,
+					height=3cm,
+					xtick={0.5, 1.5},
+					xticklabels={\(\xi\), \(\xi_1\)},
+					yticklabel=\empty,
+					ytick=\empty,
+					xmin=0,
+					xmax=4,
+					ymin=0,
+					ymax=4,
+					axis x line=middle,
+					axis y line=middle,
+					y axis line style={-stealth, thick},
+					x axis line style={-stealth, thick}
+				]
+
+				\addplot[dashed, thick, red, shift={(1,0)}] coordinates { (0.5, 2.5) (0.5, 0.5)};
+				\addplot[red, thick, shift={(1, 0)}] coordinates { (-2, 2.5) (0.5, 2.5) }  node [above] {\(u(x, t_1)\)};
+				\addplot[red, thick, shift={(1, 0)}] coordinates { (0.5, 0.5) (4.1, 0.5) } ;
+
+				\draw [-stealth, thick, blue] (1.5, 2) -- (2.5, 2) node [midway, above] {\(s\)};
+
+				\addplot[dashed, thick, black] coordinates { (0.5, 2.5) (0.5, 0.5)};
+				\addplot[black, thick, mark=o] coordinates { (-0.1, 2.5) (0.5, 2.5) }
+				node [below, midway] {\(u_l\)};
+				\addplot[black, thick, mark=*, mark options={
+							fill=black, draw=black,
+						}] coordinates { (0.5, 0.5) (4.1, 0.5) } node [above, midway] {\(u_r\)};
+			\end{axis}
+		\end{tikzpicture}
+	\end{center}
+	\caption{Initial field for the Rankine--Hugoniot problem example along with the solution at time \(t_1\).}\label{fig:rk1}
+\end{marginfigure}
+
+The solution is of the form (see \cref{fig:rk1})
+\[
+	u(x,t) = \left\{
+	\begin{aligned}
+		u_l \; & : \; x < \xi + st,    \\
+		u_r \; & : \; x \geq \xi + st,
+	\end{aligned} \right.
+\]
+where \(s\) is the speed of the shock front, that we have to determine. Let \(M\) be a large number.
+We can integrate the PDE
+\[
+	\int\limits_{-M}^{M} \pdv{u}{t} \d x = -  \int\limits_{-M}^{M} \pdv{f}{x} \d x
+\]
+and compute the right-hand side directly
+\[
+	- \int\limits_{-M}^{M} \pdv{f}{x} \d x  = -f(u(M, t)) + f(u(-M, t)) = f(u_l) - f(u_r).
+\]
+Similarly, for the time derivative
+\[
+	\int\limits_{-M}^{M} \pdv{u}{t} \d x
+	= \pdv{}{t}\int\limits_{-M}^{M} u \d x
+	= \pdv{}{t}\ab\{ (M+st)u_l + (M-st)u_r \} = s(u_l - u_r)
+\]
+We can equate both expressions
+\[
+	s(u_l - u_r) = f(u_l) - f(u_r)
+\]
+to get the \emph{Rankine--Hugoniot} formula for the speed of the shock front:
+\[
+	s = \frac{f(u_l) - f(u_r)}{u_l - u_r}.
+\]
+
+% \begin{fullwidth}
+% \bibliography{refs}
+% \end{fullwidth}
+
+
+\end{document}
