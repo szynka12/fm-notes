@@ -1,0 +1,230 @@
+
+%! TeX program = lualatex
+\documentclass[justified, nobib,a4paper]{tufte-handout}
+
+\title{Numerical solution of linear advection equation}
+
+\author[Wojciech Sadowski]{Wojciech Sadowski}
+
+%\date{28 March 2010} % without \date command, current date is supplied
+
+% \geometry{showframe} % display margins for debugging page layout
+
+\input{../src/setup.tex}
+\input{../src/tikz.tex}
+\input{../src/commands.tex}
+\input{../src/symbols.tex}
+\input{../src/env.tex}
+
+\newcommand{\Q}[1]{\section{Exercise:~{#1}}}
+\newcommand{\Sol}{\subsection{Solution}}
+
+\tikzset{
+  jumpdot/.style={mark=*,solid},
+  excl/.append style={jumpdot,fill=white},
+  incl/.append style={jumpdot,fill=black},
+}
+
+\begin{document}
+
+\maketitle% this prints the handout title, author, and date
+
+\tableofcontents
+
+\section{Introduction}
+
+We will be working with a following equation
+\[
+	\pdv{u}{t} + a\pdv{u}{x} = 0,\quad a=1
+\]
+with two initial conditions:
+\begin{enumerate}
+	\item a smooth one:
+	      \[
+		      u^0 = \alpha \ab(-8x^2),
+	      \]
+	      illustrated in \cref{fig:smooth};
+	\item a discontinuous one
+	      \[
+		      u^0 = \begin{cases}
+			      1 \text{ for } x \in [-0.5, 0.5], \\
+			      0  \text{ otherwise.}
+		      \end{cases}
+	      \]
+	      illustrated in \cref{fig:dics}.
+\end{enumerate}
+We will be working on a domain $x\in[-1, 1]$.
+
+\paragraph{Exercise:} Plot the analytical solution.
+
+
+\begin{marginfigure}[-15cm]
+	\begin{tikzpicture}
+		\begin{axis}[
+				smooth,
+				% area style,
+				xlabel=\(x\),
+				ylabel={$u_0$},
+				width=6.3cm,
+				height=5cm,
+				yticklabel=\empty,
+				ytick=\empty,
+				xtick={-1, 0, 1},
+				xmin=-1.25,
+				xmax=1.25,
+				ymin=0,
+				ymax=1.25,
+				axis x line=middle,
+				axis y line=middle,
+				y axis line style={-stealth, thick},
+				x axis line style={-stealth, thick},
+			]
+			\addplot[very thick,samples=400] {exp(-15*x^2)};
+			% \addplot[very thick, red, domain=-2:0] {-x} node [midway, left, yshift=-1em] {$\lambda_1 = -a$};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{Smooth initial condition.}\label{fig:smooth}
+\end{marginfigure}
+\begin{marginfigure}[-5cm]
+	\begin{tikzpicture}
+		\begin{axis}[
+				smooth,
+				% area style,
+				xlabel=\(x\),
+				ylabel={$u_0$},
+				width=6.3cm,
+				height=5cm,
+				yticklabel=\empty,
+				ytick=\empty,
+				xtick={-1, 0, 1},
+				xmin=-1.25,
+				xmax=1.25,
+				ymin=0,
+				ymax=1.25,
+				axis x line=middle,
+				axis y line=middle,
+				y axis line style={-stealth, thick},
+				x axis line style={-stealth, thick},
+			]
+			\addplot[very thick, smooth,samples=20,domain=-2:-0.5]{0};
+			\addplot[very thick, smooth,samples=20,domain=0.5:2]{0};
+			\addplot[excl] coordinates {(-0.5, 0)};
+			\addplot[excl] coordinates {(0.5, 0)};
+			\addplot[dashed] coordinates { (0.5, 0)  (0.5, 1) };
+			\addplot[dashed] coordinates { (-0.5, 0)  (-0.5, 1) };
+			\addplot[very thick, smooth,samples=20,domain=-0.5:0.5]{1};
+			\addplot[incl] coordinates {(-0.5, 1)};
+			\addplot[incl] coordinates {(0.5, 1)};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{Discontinuous initial condition.}\label{fig:dics}
+\end{marginfigure}
+
+\section{Numerical grid}
+
+
+\begin{marginfigure}
+	\begin{tikzpicture}
+		\begin{axis}[
+				smooth,
+				% area style,
+				xlabel=\(x\),
+				ylabel={$t$},
+				width=6.3cm,
+				height=5cm,
+				ytick={ 0.25, 0.5},
+				yticklabels={ $t^{n}$, $t^{n+1}$ },
+				xtick={0.3 ,0.5, 0.7 },
+				xticklabels={ $x_{i-1}$, $x_{i}$, $x_{i+1}$ },
+				grid=both,
+				grid style={line width=1pt, draw=gray!75},
+				% major grid style={line width=.2pt,draw=gray!50},
+				xmin=0,
+				xmax=1.25,
+				ymin=0,
+				ymax=1.25,
+				axis x line=middle,
+				axis y line=middle,
+				y axis line style={-stealth, thick},
+				x axis line style={-stealth, thick},
+			]
+			\addplot[stealth-stealth, thick] coordinates {(0.3, 0.6) (0.5, 0.6)} node [above, midway] {$\Delta x$};
+			\addplot[stealth-stealth, thick] coordinates {(0.8, 0.25) (0.8, 0.5)} node [right, midway] {$\Delta t$};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{Numerical grid}\label{fig:grid}
+\end{marginfigure}
+
+We will represent our equation on numerical mesh (see
+\cref{fig:grid}), consisting of $M$ nodes with
+positions labelled as $x_i$, where $1 < i < M$. The nodes are equally spaced by
+$\Delta x$. Additionally, our solution will be updated only in certain times,
+$t^n$ spaced $\Delta t$. The discrete solution of our continuous function $u$,
+at time $t_n$ and position $x_i$, will be denoted as $u_i^n$.
+
+\paragraph{Cyclic boundary conditions}
+To make our problem easier we will consider a cyclic grid (whatever \say{goes
+	out} on the right comes in from the left). This will make our life easier,
+because we do not want to deal with more complex boundary conditions. This will be
+equivalent to adding additional $0$ and $N+1$ node to our grid, where we will say
+that
+\[
+	u_0 = u_N,\quad u_{N+1} = u_1.
+\]
+\section{Gradient representation on the grid}
+Our equation consists of gradients, and has to be represented on the numerical grid.
+First let's start with the spatial derivative.
+
+\paragraph{Taylor series}
+If we want to represent a gradient on a grid we can start with a Taylor series
+of a function around a point $a$:
+\[
+	u \approx \sum\limits_{\alpha=0}^\infty \frac{u^{(n)}(a)(x-a)^n}{n!}
+\]
+Using the Taylor expansion we can now define a \emph{finite difference} by cutting the series:
+\[
+	u(x) \approx u(a) + (x-a)u'(a) + \underbrace{\mathcal{O}\ab\{{(x-a)}^2\}}_\text{leading error term}
+\]
+\[
+	u'(a) \approx 	\frac{u(x) - u(a)}{x-a} + \mathcal{O}\ab\{x-a\}
+\]
+We are looking for a value at $a$, and let's say that we know a value at $x=\xi$, and
+$\xi>a$. We can then write a \emph{forwards difference}
+\[
+	u'(a) \approx 	\frac{u(\xi) - u(a)}{\xi-a} + \mathcal{O}\ab\{\xi-a\}
+\]
+or if we set $\xi$ and $a$ at nodes that are right next to each other, we can write
+\[
+	u'_i \approx 	\frac{u_{i+1} - u_i}{\Delta x} + \mathcal{O}\ab(\Delta x).
+\]
+\paragraph{Upwind}
+Analogously, we can write backward difference ($\xi < a$):
+\[
+	u'_i \approx 	\frac{u_{i} - u_{i-1}}{\Delta x} + \mathcal{O}\ab(\Delta x).
+\]
+This is an important formula, as it effectively prescribe gradient directionally. We know
+that the flow is geeing in the right direction ($a=1$), so we know that the information will
+propagate to the right, so we pick backward difference as our gradient representation.
+
+\paragraph{Exercise:} Write and expression for \emph{central difference.} It should be second order accurate and contain $u_{i+1}$ and $u_{i-1}$.
+
+\paragraph{Application to the equation}
+We use forward difference for time derivative
+\[
+	\pdv{u}{t} \approx \frac{u^{n+1} - u^n}{\Delta t},
+\]
+and we can put all of this into our equation
+\[
+	\frac{u^{n+1} - u^n}{\Delta t}
+	+ a \frac{u_{i} - u_{i-1}}{\Delta x} + \mathcal{O}(\Delta t, \Delta x) = 0,
+\]
+from which we can get explicit update for our variable
+\[
+	u^{n+1}_i = u_i^n - \frac{a \Delta t}{\Delta x}(u_i^n - u_{i-1}^n)  + \mathcal{O}(\Delta t, \Delta x) .
+\]
+The fraction $C = \frac{a \Delta t}{\Delta x}$ is called the CFL number.
+
+\section{Von Neumann stability analysis}
+
+
+\end{document}
