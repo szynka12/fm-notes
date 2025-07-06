@@ -18,6 +18,11 @@
 \newcommand{\Q}[1]{\section{Exercise:~{#1}}}
 \newcommand{\Sol}{\subsection{Solution}}
 
+\tikzset{
+  jumpdot/.style={mark=*,solid},
+  excl/.append style={jumpdot,fill=white},
+  incl/.append style={jumpdot,fill=black},
+}
 
 \begin{document}
 
@@ -367,8 +372,11 @@ If we put that inside our equation we get:
 \[
 	\pdv{\bm{u}}{t} + \bm{K}\bm{\Lambda}\bm{K}^{-1}\pdv{\bm{u}}{x} = 0.
 \]
-We can propose a variable change so $\bm{u} = \bm{K}\bm{u}$, and put that into the
-equation (remember that $\bm{K}$ has only constant coefficients)
+We can propose a variable change so $\bm{u} = \bm{K}\bm{w}$, and put that into the
+equation\sidenote{%
+	Remember that $\bm{K}$ has only constant coefficients, so we can easily move it in front of the
+	derivative.
+}
 \[
 	\bm{K}\pdv{\bm{w}}{t} + \bm{K}\bm{\Lambda}\underbrace{\bm{K}^{-1}\bm{K}}_{=\bm{I}}\pdv{\bm{w}}{x} = 0.
 \]
@@ -378,9 +386,13 @@ We can now extract the matrix $\bm{K}$
 \]
 and multiply by the inversion
 \[
-	\bm{K}^{-1}\bm{K}\ab(\pdv{\bm{w}}{t} + \bm{\Lambda}\pdv{\bm{w}}{x}) = 0
+	\underbrace{\bm{K}^{-1}\bm{K}}_{=\bm{I}}\ab(\pdv{\bm{w}}{t} + \bm{\Lambda}\pdv{\bm{w}}{x}) = 0
 \]
-which gets us where we need to be.
+which gets us where we need to be:
+\[
+	\pdv{\bm{w}}{t} + \bm{\Lambda}\pdv{\bm{w}}{x} = 0
+\]
+
 
 \Q{Derive the initial condition in terms of characteristic variables}
 The initial condition is given as $\bm{u}(x,0) = \bm{u}^0(x)$. We know that
@@ -412,6 +424,229 @@ so we can compute
 \]
 
 \Q{Derive the solution in terms of decoupled characteristics}
-\Q{Compute the solution in terms of original variables}
 
+We have now a set of decoupled equations
+\[
+	\pdv{\bm{w}}{t} + \bm{\Lambda}\pdv{\bm{w}}{x} = 0
+\]
+or, alternatively,
+\[
+	\begin{split}
+		 & \pdv{w_1}{t} + \lambda_1\pdv{w_1}{x} = 0, \\
+		 & \pdv{w_2}{t} + \lambda_2\pdv{w_2}{x} = 0,
+	\end{split}
+\]
+so we can solve each separately. Since $\lambda_i = \mathrm{const}$, we know that the solution has the form of\sidenote[][-6cm]{%
+	\emph{Reminder:} to get the value of $w_i$ for a certain position $x$ and  time
+	$t$, you need to go back along the characteristic towards the time $0$. While
+	marching along the characteristic you end up going $-\lambda_i t$ in space.}
+\[
+	w_i(x, t) = w_i^0 (x-\lambda_i t),
+\]
+as illustrated in \cref{fig:ch_var}.
+\begin{marginfigure}[-4cm]
+	\begin{center}
+		\begin{tikzpicture}
+			% \pgfplotsset{every axis plot post/.append style={draw=black, fill=gray!25}}
+			\begin{axis}[
+					smooth,
+					% area style,
+					xlabel=\(x\),
+					ylabel={\(t\), {\color{gray}\(u\)}},
+					width=6.3cm,
+					yticklabel=\empty,
+					ytick=\empty,
+					xtick={1.5},
+					xticklabel={\(\xi\)},
+					xmin=0,
+					xmax=4,
+					ymin=0,
+					ymax=4,
+					axis x line=middle,
+					axis y line=middle,
+					y axis line style={-stealth, thick},
+					x axis line style={-stealth, thick},
+				]
+				% x = x0 + 1t
+				\addplot[gray, fill=gray!25, shift={(1.25,1.25)}] coordinates
+					{(-7, 0) (0.5,0.2) (1.5,1.5) (2.5,0.2) (10, 0)}
+				node [midway, above, xshift=-0.4cm] {\(w_i(x,t)\)};
+
+				\addplot[gray, fill=gray!25] coordinates
+					{(-7, 0) (0.5,0.2) (1.5,1.5) (2.5,0.2) (10, 0)}
+				node [midway, above, xshift=-0.4cm] {\(w_i^0(x)\)};
+
+				\addplot[red, thick] coordinates { (1.5, 0) (3.25, 1.75) }
+				node [midway, right] {\(x = \xi + \lambda_i t\)};
+
+				\addplot[red, dashed] coordinates { (1.5, 0) (1.5, 1.5) };
+				\addplot[red, dashed] coordinates { (2.75, 1.25) (2.75, 2.75) };
+
+			\end{axis}
+		\end{tikzpicture}
+	\end{center}
+	\caption{The solution for an individual characteristic variable $w_i$.}\label{fig:ch_var}
+\end{marginfigure}
+For the whole vector $\bm{w}$ this looks as (remember that $\lambda = \{-a, a\}$ so we use first eigenvalue for the first equation)
+\[
+	\bm{w}(x, t) = \bm{w}^0(x - \lambda_i t) =
+	\frac{1}{2a\rz}
+	\begin{bmatrix}
+		a \rs^0(x + at) -\rz\us^0(x + at) \\
+		a \rs^0(x - at) + \rz\us^0 (x - at)
+	\end{bmatrix}
+\]
+\Q{Compute the solution in terms of original variables}
+The only thing left to do is to use $\bm{K}$:
+\begin{fullwidth}
+	\begin{equation*}
+		\begin{split}
+			\bm{u} = \bm{K}\bm{w} = \bm{K}\bm{w}^0(x - \lambda_i t) = &
+			\frac{1}{2a\rz}
+			\begin{bmatrix}
+				\rz & \rz \\
+				-a  & a
+			\end{bmatrix}
+			\begin{bmatrix}
+				a \rs^0(x + at) -\rz\us^0(x + at) \\
+				a \rs^0(x - at) + \rz\us^0 (x - at)
+			\end{bmatrix}                          \\
+			=                                                         &
+			\frac{1}{2}
+			\begin{bmatrix}
+				\ab\{\rs^0(x + at) + \rs^0(x - at) \} + \frac{\rz}{a}\ab\{\us^0 (x - at) -\us^0(x + at)\} \\
+				\ab\{\us^0(x + at)  + \us^0 (x - at)\} + \frac{a}{\rz} \ab\{\rs^0(x - at)- \rs^0(x + at)\}
+			\end{bmatrix}
+		\end{split}
+	\end{equation*}
+\end{fullwidth}
+
+\Q{Riemann problem for linearized Euler equation}
+Find the solution to an equation\sidenote{%
+	We dropped the $\star$ indices for convenience, $\rho$ and $u$, denote disturbances.
+}
+\[
+	\pdv{}{t}
+	\begin{bmatrix}
+		\rho \\
+		u
+	\end{bmatrix} +
+	\pdv{}{x}
+	\begin{bmatrix}
+		\rho_0 u \\
+		a^2\rho/\rho_0
+	\end{bmatrix} = \bm{0}
+\]
+with $\rho_0=1$, $a=1$, subject to the initial conditions:
+\[
+	u^0 = 0, \rho^0 = \begin{cases}
+		1 \text{ for } x < 0, \\
+		0  \text{ for } x \geq 0.
+	\end{cases}
+\]
+\Sol
+We know already everything about this equation as we worked with it for a long time. The solution can be found in couple of
+quick steps:
+\begin{enumerate}
+	\item Compute flux Jacobian $\bm{J} = \pdv{\bm{f}}/{x}$.
+	\item Compute the eigenvalues and eigenvectors of $\bm{J}$.
+	\item Find the form of equation in terms of characteristic variables
+	      \[
+		      \pdv{w_i}{t} + \lambda_i\pdv{w_i}{x} = 0
+	      \]
+	\item Compute the initial conditions in terms of $\bm{w}$. See \cref{fig:init}.
+	\item Both equations can be solved relatively easy graphically:
+
+\end{enumerate}
+
+\begin{marginfigure}
+	\begin{center}
+		\begin{tikzpicture}
+			\begin{axis}[
+					smooth,
+					% area style,
+					xlabel=\(x\),
+					ylabel={$\rho$},
+					width=6.3cm,
+					height=3cm,
+					yticklabel=\empty,
+					ytick=\empty,
+					xtick={0},
+					xmin=-2,
+					xmax=2,
+					ymin=0,
+					ymax=1.5,
+					axis x line=middle,
+					axis y line=middle,
+					y axis line style={-stealth, thick},
+					x axis line style={-stealth, thick},
+				]
+				\addplot[very thick, smooth,samples=20,domain=-2:0]{1};
+				\addplot[excl] coordinates {(0,1)};
+				\addplot[very thick, smooth,samples=20,domain=0:2]{0.5};
+				\addplot[incl] coordinates {(0,0.5)};
+			\end{axis}
+		\end{tikzpicture}
+
+		\begin{tikzpicture}
+			\begin{axis}[
+					smooth,
+					% area style,
+					xlabel=\(x\),
+					ylabel={$w_1, w_2$},
+					width=6.3cm,
+					height=3cm,
+					yticklabel=\empty,
+					ytick=\empty,
+					xtick={0},
+					xmin=-2,
+					xmax=2,
+					ymin=0,
+					ymax=1.5,
+					axis x line=middle,
+					axis y line=middle,
+					y axis line style={-stealth, thick},
+					x axis line style={-stealth, thick},
+				]
+				\addplot[very thick, smooth,samples=20,domain=-2:0]{1} node [above, midway] {$\rho/(2\rho_0)$};
+				\addplot[excl] coordinates {(0,1)};
+				\addplot[very thick, smooth,samples=20,domain=0:2]{0.5};
+				\addplot[incl] coordinates {(0,0.5)};
+			\end{axis}
+		\end{tikzpicture}
+	\end{center}
+	\caption{The initial conditions in terms of $\rho$ and $u=0$}\label{fig:init}
+\end{marginfigure}
+
+\begin{marginfigure}
+	\begin{tikzpicture}
+		\begin{axis}[
+				smooth,
+				% area style,
+				xlabel=\(x\),
+				ylabel={$t$},
+				width=6.3cm,
+				% height=cm,
+				yticklabel=\empty,
+				ytick=\empty,
+				xtick={0},
+				xmin=-2,
+				xmax=2,
+				ymin=0,
+				ymax=2,
+				axis x line=middle,
+				axis y line=middle,
+				y axis line style={-stealth, thick},
+				x axis line style={-stealth, thick},
+			]
+			\addplot[very thick, smooth,samples=20,domain=-2:0]{1};
+			\addplot[excl] coordinates {(0,1)};
+			\addplot[very thick, smooth,samples=20,domain=0:2]{0.5};
+			\addplot[incl] coordinates {(0,0.5)};
+			\addplot[very thick, red, domain=0:2] {x} node [midway, right] {$\lambda_2 = a$};
+			\addplot[very thick, red, domain=-2:0] {-x} node [midway, left, yshift=-1em] {$\lambda_1 = -a$};
+		\end{axis}
+	\end{tikzpicture}
+	\caption{Solution in terms of characteristic variables.}
+\end{marginfigure}
 \end{document}
