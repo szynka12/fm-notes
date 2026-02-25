@@ -219,12 +219,197 @@ and we can put all of this into our equation
 	+ a \frac{u_{i} - u_{i-1}}{\Delta x} + \mathcal{O}(\Delta t, \Delta x) = 0,
 \]
 from which we can get explicit update for our variable
-\[
+\begin{equation}
 	u^{n+1}_i = u_i^n - \frac{a \Delta t}{\Delta x}(u_i^n - u_{i-1}^n)  + \mathcal{O}(\Delta t, \Delta x) .
-\]
+	\label{eq:nume}
+\end{equation}
 The fraction $C = \frac{a \Delta t}{\Delta x}$ is called the CFL number.
 
 \section{Von Neumann stability analysis}
+We assume that the solution $u_i^n$ can be represented on $[a,b]$ as a \emph{Fourier series}:
+\[
+	u_i^n = a_0^n
+	+ \sum\limits_{m=1}^\infty a_m^n \cos\ab(2\pi m \frac{x-a}{b-a})
+	+ \sum\limits_{m=1}^\infty b_m^n \sin\ab(2\pi m \frac{x-a}{b-a})
+\]
+Since, we have a discrete system with only $M$ points, we have to use \emph{discrete Fourier series}, which supports wavelength of $2\Delta x$ or longer. We also know that $x_i - a = i\Delta x$ and $b - a = N\Delta x$. The series truncated only the frequencies we want is
+\[
+	u_i^n \approx a_0^n
+	+ \sum\limits_{m=1}^{M/2} a_m^n \cos \frac{2\pi m i}{N}
+	+  b_m^n \sin\frac{2\pi m i}{N}
+\]
+Let us assume that $j = \sqrt{-1}$ and use the \emph{Euler's formula}:
+\[
+	e^{jx} = \cos x + j \sin x
+\]
+to simplify the above:
+\[
+	u_i^n = \sum\limits_{m = -M/2}^{M/2} A_m^n \exp\frac{2\pi j m i}{N}.
+\]
+Here, the coefficients $A_m$ relate to $a_m$ and $b_m$\footnote{Derive how!}.
 
+We require linearity of the equations to use the \emph{von Neumann} stability
+analysis, because we want to use the superposition principle\footnote{%
+	The solution is the superposition (sum) of different solutions.%
+} and use only one of the modes. We will also use a simplified notation of
+$\phi = 2\pi m / N$, for our chosen $m$. So our trial solution is:
+\[
+	u_i^n = A^n \exp ji\phi = A^n e^{ji\phi}
+\]
+
+We can inert our expression into the \cref{eq:nume}, without the discrete cation errors estimated:
+\[
+	u^{n+1}_i = u_i^n - C(u_i^n - u_{i-1}^n)
+\]
+\begin{fullwidth}
+	\[
+		A^{n+1}e^{ji\phi}
+		= A^{n}e^{ji\phi} - C(A^{n}e^{ji\phi} - A^{n}e^{j(i-1)\phi})
+		= A^{n}e^{ji\phi} - C(A^{n}e^{ji\phi} - A^{n}e^{ji\phi}e^{-j\phi})
+		= A^{n}e^{ji\phi} - CA^{n}e^{ji\phi}(1 - e^{-j\phi})
+	\]
+\end{fullwidth}
+We see that we can divide by the exponent $e^{ij\phi}$:
+\[
+	A^{n+1}= A^{n} - CA^{n}(1 - e^{-j\phi}) = A^n\ab[ 1 - C\ab( 1 - e^{-j\phi} )]
+\]
+and introduce the amplification factor
+\[
+	G = \frac{A^{n+1}}{A^{n}},
+\]
+which helps us remove the \say{time} from our expression:
+\[
+	G = 1 - C + Ce^{-j\phi} = 1 - C + C\cos\phi + jC\sin\phi.
+\]
+The norm of $G$ is defined as product of itself with the complex conjugate so:
+\begin{fullwidth}
+	\[
+		\begin{split}
+			{|G|}^2 = & G G^* =  \ab(1 - C + C\cos\phi + jC\sin\phi)\ab(1 - C + C\cos\phi - jC\sin\phi)          \\
+			=         & 1 - C + C\cos\phi - jC\sin\phi
+			- C +{\color{red} C^2} + C^2\cos\phi - jC^2\sin\phi                                                  \\
+			          & +          C\cos\phi - C^2\cos\phi + {\color{red}{(C\cos\phi)}^2} - jC^2\sin\phi\cos\phi
+			+jC\sin\phi + jC^2\sin\phi + jC^2\sin\phi\cos\phi - {\color{red}j^2 C^2 {(\sin\phi)}^2}
+		\end{split}
+	\]
+\end{fullwidth}
+We start the long work. We know that
+\[
+	C^2 = C^2\cos^2 x + C^2\sin^2 x  = C^2\cos^2 x - j^2 \sin^2 x,
+\]
+so the terms in {\color{red}red} give us
+\[
+	\begin{split}
+		{|G|}^2
+		= & 1 - C +{\color{red} 2C^2} + C\cos\phi - jC\sin\phi
+		- C  {\color{magenta}- C^2\cos\phi} {\color{blue}- jC^2\sin\phi  }                             \\
+		  & +          C\cos\phi {\color{magenta}- C^2\cos\phi}  {\color{green}- jC^2\sin\phi\cos\phi}
+		+jC\sin\phi + {\color{blue}jC^2\sin\phi} {\color{green}+ jC^2\sin\phi\cos\phi}
+	\end{split}
+\]
+The things in {\color{green}green}, {\color{magenta}magenta} and
+	{\color{blue}blue} are the same (\emph{be careful with the signs}), and we can
+collect different $C$ and $C^2$
+\[
+	\begin{split}
+		{|G|}^2
+		= & \overbrace{1 - 2C + C^2}^{{(1 -C)^2}} +C^2 + C\cos\phi - jC\sin\phi
+		\\
+		  & -2C^2 \cos\phi +          C\cos\phi
+		+jC\sin\phi.
+	\end{split}
+\]
+After that it is reasonably clear:
+\[
+	{|G|}^2 = {(1-C)}^2 + C^2 + 2C\cos\phi  -2C^2 \cos\phi,
+\]
+or
+\[
+	{|G|}^2 = {(1-C)}^2 + C^2 + 2C(1-C)\cos\phi.
+\]
+
+For stability ${|G|}^2 \geq 1$
+We now are interested in limiting behaviours, so we assume that $\cos\phi$ is either $1$ or $-1$.
+For $1$:
+\[
+	{(1-C)}^2 + C^2 + 2C(1-C) \geq 1
+\]
+\[
+	1 - 2C +C^2 + C^2 + 2C- 2C^2 \geq 1 \rightarrow 1 \geq 1
+\]
+and for $-1$:
+\[
+	{(1-C)}^2 + C^2 - 2C(1-C) \geq 1
+\]
+\[
+	1 - 2C + C^2 + C^2 - 2C + 2C^2 \geq 1 \rightarrow 1 - 4C + 4C^2 \geq 1
+\]
+with the solution $0 \geq C \geq 1$, \emph{which is our stability limit!}.
+
+\section{Cauchy-Kowalewski procedure}
+Returning to the original problem
+\[
+	\pdv{u}{t} + a\pdv{u}{x} = 0
+\]
+discretized as
+\[
+	\frac{u^{n+1} - u^n}{\Delta t}
+	+ a \frac{u^n_{i} - u^n_{i-1}}{\Delta x}  = 0,
+\]
+we can use Taylor series again to write exact expressions for the derivative approximations
+\[
+	\frac{u_i^{n+1}-u_i^n}{\Delta t} = \pdv{u}{t}(x_i, t^n) + \frac{\Delta t}{2}\pdv[order=2]{u}{t}(x_i, t^n)
+	+ \frac{\Delta t^2}{6}\pdv[order=3]{u}{t} + \mathcal{O}(\Delta t^3)
+\]
+and analogously for spatial derivatives
+\[
+	\frac{u_i^{n}-u_{i-1}^n}{\Delta x} = \pdv{u}{x}(x_i, t^n) - \frac{\Delta x}{2}\pdv[order=2]{u}{x}(x_i, t^n)
+	- \frac{\Delta x^2}{6}\pdv[order=3]{u}{x} + \mathcal{O}(\Delta x^3)
+\]
+We can insert it into our original equation:
+\begin{fullwidth}
+	\[
+		\pdv{u}{t}(x_i, t^n) + \frac{\Delta t}{2}\pdv[order=2]{u}{t}(x_i, t^n)
+		+ \frac{\Delta t^2}{6}\pdv[order=3]{u}{t} + \mathcal{O}(\Delta t^3)
+		+ a\pdv{u}{x}(x_i, t^n) - a\frac{\Delta x}{2}\pdv[order=2]{u}{x}(x_i, t^n)
+		- a\frac{\Delta x^2}{6}\pdv[order=3]{u}{x} + a\mathcal{O}(\Delta x^3)
+		=0
+	\]
+\end{fullwidth}
+which after transforming gives us:
+\begin{fullwidth}
+	\[
+		\pdv{u}{t}(x_i, t^n) + a\pdv{u}{x}(x_i, t^n)
+		=
+		\underbrace{
+			- \frac{\Delta t}{2}\pdv[order=2]{u}{t}(x_i, t^n)
+			- \frac{\Delta t^2}{6}\pdv[order=3]{u}{t}
+			+ a\frac{\Delta x}{2}\pdv[order=2]{u}{x}(x_i, t^n)
+			+ a\frac{\Delta x^2}{6}\pdv[order=3]{u}{x}
+			+ \mathcal{O}(\Delta t^3) + a\mathcal{O}(\Delta x^3)
+		}_{e_T\quad\text{truncation error}}
+	\]
+\end{fullwidth}
+We can now do \emph{truncation error analysis}. Since the right side vanishes for small $\Delta x$ and $\Delta t$,
+we see:
+\begin{itemize}
+	\item that we are first order in space and time (leading term is $x^2$ and $t^2$)
+	\item that the numerical scheme is consistent, i.e.\ for vanishing spacing we recover original equation.
+\end{itemize}
+
+Now we want to study the exact solution of the numerical scheme in question and look at the truncation error.
+We want to eliminate the time derivatives. We can write
+\[
+	\pdv{u}{t}=-a\pdv{u}{x} + \mathcal{O}(\Delta x, \Delta t)
+\]
+and
+\[
+	\pdv[order=2]{u}{t}=\pdv{}{t}\pdv{u}{t} = \pdv{}{t}\ab(-a\pdv{u}{x}) + \mathcal{O}(\Delta x, \Delta t)
+	= a^2\pdv[order=2]{u}{x}
+\]
+so, if we cut the orginal truncation error at second order and insert CFL number
+\[
+	e_T = \frac{ 1 -C}{2}\Delta x a\pdv[order=2]{u}{x} \mathcal{O}(\Delta x^2, \Delta t^2)
+\]
 
 \end{document}
